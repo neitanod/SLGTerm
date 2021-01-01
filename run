@@ -1,0 +1,231 @@
+#!/usr/bin/env php
+<?php
+require("SLGTerm/SLGTerm.php");
+require("SLGTerm/Terminal.php");
+require("SLGTerm/Cursor.php");
+require("SLGTerm/Label.php");
+require("SLGTerm/Spinner.php");
+require("SLGTerm/Input.php");
+
+use SLGTerm\box;
+use SLGTerm\Controller;
+use SLGTerm\Terminal;
+use SLGTerm\Terminal as T;
+use SLGTerm\Cursor;
+use SLGTerm\TextInput;
+use SLGTerm\Label;
+use SLGTerm\Spinner;
+use SLGTerm\Input;
+
+
+
+
+function non_block_read_1() {
+    $read = array(STDIN);
+    $write = array();
+    $except = array();
+    $result = stream_select($read, $write, $except, 0);
+    if($result === false) throw new Exception('stream_select failed');
+    if($result === 0) return false;
+    $data = stream_get_line(STDIN, 1);
+    return $data;
+}
+
+function non_block_read_2() {
+    Input::readPrepare();
+    $data = Input::read();
+    Input::readCleanup();
+    return $data;
+}
+
+function non_block_read_3() {
+    $ttyprops = trim(`stty -g`);
+    system('stty -icanon -echo');
+    stream_set_blocking(STDIN, false);
+    $data = stream_get_line(STDIN, 1);
+    system("stty '".$ttyprops."'");
+    return $data;
+}
+
+
+// Save screen and restore at the end.
+$original_cursor_position = Cursor::getPosition();
+Terminal::saveContents();
+
+
+
+
+$spinner = new Spinner(Terminal::cols()-3, 2);
+
+while(1) {
+    $chars = [];
+    if($chars = non_block_read_2()) {
+        if(!is_array($chars)) $chars = [$chars];
+        foreach ( $chars as $char ) {
+            echo json_encode($char)." => \"".\ord($char)."\",\n";
+            // handle your input here
+        }
+
+    } else {
+        // perform your processing here
+        $spinner->advance();
+        time_nanosleep(0, 100 * 1000000);
+    }
+}
+
+
+
+
+
+Terminal::restoreContents();
+Cursor::setPosition($original_cursor_position);
+
+
+return;
+
+$original_cursor_position = Cursor::getPosition();
+Terminal::saveContents();
+
+$controller = new Controller();
+
+$controller->on("key", function( $event ) {
+    $key = $event->getData('key');
+    Terminal::echoln("key: ".$key." ".json_encode($event->getData()));
+});
+
+$controller->loop();
+
+exit;
+
+// Terminal::clear();
+// Terminal::home();
+
+// Terminal::bell();
+
+
+/* */
+//Terminal::echoAt(9, 20, "Your name: ");
+//$TextInput1 = (new TextInput(20, 20));
+
+//echo("Enter your name: ");
+
+// $Box = (new Box())
+//     ->render();
+
+$Label = (new Label(" Enter your name: ", 3, 3))
+    ->bgColor("green")
+    ->fgColor("black")
+    ->render();
+
+echo(" ");
+
+$TextInput1 = (new TextInput( 22, 3))
+    ->bgColor("cyan");
+    //->width(25);
+
+$TextInput1
+
+    ->on("input",
+        function() {
+            static $count=0;
+            $count++;
+            Terminal::echoAt(3, 5, "Input events: ".$count);
+        })
+
+
+    ->on("input",
+        function($event) use ($TextInput1) {
+            Terminal::clearLine( 10 );
+            Terminal::echoAt( 10, 10,
+                "Input so far: " . $event->getData("value") .
+                " (From TextInput->value: " . $TextInput1->getValue() . ")" );
+        })
+
+
+    ->onInterval(1000,
+        function($event) use ($TextInput1) {
+            Terminal::clearLine( 10 );
+            Terminal::echoAt( 10, 11, "Interval: ".date());
+        })
+
+
+    ->onTimeout(5000,
+        function($event) use ($TextInput1) {
+            Terminal::clearLine( 10 );
+            Terminal::echoAt( 10, 12, "Timed out: ".date());
+        });
+
+
+$your_name = $TextInput1->render()->focus();
+$your_name = $TextInput1->getValue();
+
+
+// move to line 25 and clear the lower half of the screen
+//Cursor::move(3, 25);
+//Terminal::clearDown();
+
+Cursor::move(3, 30);
+
+echo("Hello, {$your_name}!!\n");
+
+$Label->render();
+$your_name = $TextInput1->focus();
+
+Cursor::move(0, 30);
+//Terminal::clearDown();
+
+
+Terminal::restoreContents();
+Cursor::setPosition($original_cursor_position);
+
+echo("Hello, {$your_name}!!\n");
+
+exit();
+
+
+
+
+
+/* */
+
+T::echoln("Is CLI: " . T::isCli());
+T::echoln("Is TTY: " . T::isTTY());
+T::echoln("Is piped: " . T::isPiped());
+T::echoln("Cols: " . T::cols());
+
+T::echoln("Cols: " . T::cols());
+T::echoln("Rows: " . T::rows());
+T::echoln("Colors: " . T::colors());
+
+$position = Cursor::getPosition();
+
+T::echoln("Cursor Position: col:". $position['col'] . ", row: ". $position['row']);
+
+Cursor::up(15);
+Cursor::save();
+
+$position = Cursor::getPosition();
+
+T::echoln("Cursor Position: col:". $position['col'] . ", row: ". $position['row']);
+
+$char = T::read();
+
+$input = T::readln();
+
+T::echoln("Pressed key was: ".$char);
+T::echoln("Input text was: ".$input);
+
+Cursor::restore();
+T::echoln("@@@");
+
+Cursor::move(20,20);
+$input = T::input(
+    [
+        'callbacks' => [
+            27 => function($key, &$input) {T::echoln("Input so far:".$input); return true;},
+            9 => function()  {echo "T";},
+        ],
+        //'echo' => false,
+    ]
+);
+T::echoln("Input text was: ".$input);
