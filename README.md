@@ -78,3 +78,7 @@ This library helps you create simple screens ("forms") with widgets to be used i
     }
 
 </source>
+
+Another example:
+
+![Demo](https://publish.ip1.cc/storage/uploads/rArc6b9ZBwhDDiqgQWyGRsf6eMmXT2hodejSnszF.gif)
