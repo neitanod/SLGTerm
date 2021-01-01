@@ -8,51 +8,60 @@ require_once(__DIR__."/EditableString.php");
 
 class Controller {
 
-   use Observable;
-   // use Timeable;
+    use Observable;
+    // use Timeable;
 
-   protected $localBuffer = [];
+    protected $widgets = [];
+    public $exit = false;
 
-   public function __construct() {
-       $this->init_observable();
-   }
+    public function __construct() {
+        $this->init_observable();
+    }
 
-   public function loop() {
+    public function loop() {
 
-       $exit = false;
+        $this->render();
 
-       Terminal::readPrepare();
+        $this->exit = false;
 
-       while(!$exit) {
-           $this->readToBuffer();
-           $key = $this->readFromBuffer();
-           if(is_object($key) || \ord($key)>0) {
-               $this->bus->emit(
-                   new Event("key", ["code" => \ord($key), "key"=> $key])
-               );
-           }
-       }
+        Input::readPrepare();
 
-       Terminal::readCleanup();
-   }
+        while(!$this->exit) {
+            $chars = [];
+            if($chars = Input::read()) {
+                //if(!is_array($chars)) $chars = [$chars];
+                foreach ( $chars as $char ) {
+                    $this->emit( "key", [
+                        "key"=>$char,
+                        "controller"=>$this
+                    ]);
+                }
 
-   public function readFromBuffer() {
-       if ( !empty($this->localBuffer) ) {
-           return array_shift($this->localBuffer);
-       }
-   }
+            } else {
+                // perform your processing here
+                // $spinner->advance();
+                // time_nanosleep(0, 100 * 1000000);
+            }
+        }
 
-   public function readToBuffer() {
-       $captured = Terminal::read();
-       $this->localBuffer[] = $captured;
-   }
+        Input::readCleanup();
+    }
 
+    public function addWidget($widget) {
+        $this->widgets[] = $widget;
+    }
+
+    public  function render() {
+        foreach($this->widgets as $widget ) {
+            $widget->render();
+        }
+    }
 }
 
 class TextInput {
 
-    // use Observable;
-    // use Coloreable;
+    use Observable;
+    use Coloreable;
     // use Timeable;
 
     protected $col;
@@ -139,6 +148,10 @@ class TextInput {
         return $this;
     }
 
+    public function input($event) {
+        $key = $event->getData("key");
+    }
+
     public function focus() {
 
         $this->render();
@@ -150,6 +163,10 @@ class TextInput {
         $codes = "";
 
         while(!$exit) {
+
+
+
+
 
             $key = $this->readFromBuffer();
 

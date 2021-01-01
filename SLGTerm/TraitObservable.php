@@ -26,24 +26,4 @@ trait Observable {
         return $this->bus->emit(new Event($eventType, $data));
     }
 
-
-
-
-    protected $timers = [];
-
-    public function onTimeout(int $milliseconds, callable $callback) {
-        return $this;
-    }
-
-    public function onInterval(int $milliseconds, callable $callback) {
-        $this->bus->addListener("interval", $callback);
-        return $this;
-    }
-
-    public function emitIntervals( $data ) {
-        ;
-    }
-
-
 }
-

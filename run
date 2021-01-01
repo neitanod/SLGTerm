@@ -20,82 +20,60 @@ use SLGTerm\Input;
 
 
 
-function non_block_read_1() {
-    $read = array(STDIN);
-    $write = array();
-    $except = array();
-    $result = stream_select($read, $write, $except, 0);
-    if($result === false) throw new Exception('stream_select failed');
-    if($result === 0) return false;
-    $data = stream_get_line(STDIN, 1);
-    return $data;
-}
-
-function non_block_read_2() {
-    return $data;
-}
-
-function non_block_read_3() {
-    $ttyprops = trim(`stty -g`);
-    system('stty -icanon -echo');
-    stream_set_blocking(STDIN, false);
-    $data = stream_get_line(STDIN, 1);
-    system("stty '".$ttyprops."'");
-    return $data;
-}
-
-
 // Save screen and restore at the end.
 $original_cursor_position = Cursor::getPosition();
 Terminal::saveContents();
 
 
+$controller = new Controller();
 
+$StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
+    ->bgColor("green")
+    ->fgColor("black")
+    ->render();
 
-$spinner = new Spinner(Terminal::cols()-3, 2);
+$controller->on("key", function( $event ) use ($StatusBar) {
+    $key = $event->getData('key');
+    $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+        ->render();
+});
 
-Input::readPrepare();
-$exit = false;
-while( !$exit ) {
-    $chars = [];
-    if($chars = Input::read()) {
-        //if(!is_array($chars)) $chars = [$chars];
-        foreach ( $chars as $char ) {
-            echo "<".$char.">\n";
-            // echo json_encode($char)." => \"".\ord($char)."\",\n";
-            // handle your input here
-            if($char == "q") $exit = true;
-        }
-
-    } else {
-        // perform your processing here
-        $spinner->advance();
-        time_nanosleep(0, 100 * 1000000);
+$controller->on("key", function( $event ) {
+    $key = $event->getData('key');
+    if($key == "<esc>") {
+        $event->getData('controller')->exit = true;
     }
-}
-Input::readCleanup();
+});
 
+$Label1 = (new Label(" Enter your name: ", 3, 3))
+    ->bgColor("green")
+    ->fgColor("black");
 
+$TextInput1 = (new TextInput( 22, 3))
+    ->bgColor("cyan");
+    //->width(25);
 
+$controller->addWidget($Label1);
+$controller->addWidget($TextInput1);
 
+$controller->loop();
 
 Terminal::restoreContents();
 Cursor::setPosition($original_cursor_position);
 
-
 return;
 
-$original_cursor_position = Cursor::getPosition();
-Terminal::saveContents();
 
-$controller = new Controller();
 
-$controller->on("key", function( $event ) {
-    $key = $event->getData('key');
-    Terminal::echoln("key: ".$key." ".json_encode($event->getData()));
-});
 
-$controller->loop();
+
+
+
+
+
+
+
+
 
 exit;
 
