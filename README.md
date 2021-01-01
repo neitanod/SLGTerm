@@ -5,6 +5,12 @@ Beware: This project is in its early stages.  It has not been used in production
 
 This library helps you create simple screens ("forms") with widgets to be used in the Linux console (locally or via SSH).
 
+Example:
+
+![Demo](https://publish.ip1.cc/storage/uploads/rArc6b9ZBwhDDiqgQWyGRsf6eMmXT2hodejSnszF.gif)
+
+Another example:
+
 ![Demo](https://publish.ip1.cc/storage/uploads/DBdfRfBnXV1uZgNJEIDlJjIfQtEvVjQe43C3sZ73.gif)
 
 <source>
@@ -78,7 +84,3 @@ This library helps you create simple screens ("forms") with widgets to be used i
     }
 
 </source>
-
-Another example:
-
-![Demo](https://publish.ip1.cc/storage/uploads/rArc6b9ZBwhDDiqgQWyGRsf6eMmXT2hodejSnszF.gif)
