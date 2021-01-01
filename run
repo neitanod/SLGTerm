@@ -26,7 +26,11 @@ function main() {
     $original_cursor_position = Cursor::getPosition();
     Terminal::saveContents();
 
-    $user_name = show_name_form();
+    $app = create_name_form();
+
+    $app->focus();
+
+    $user_name = $app->nameField->getValue();
 
     Terminal::restoreContents();
     Cursor::setPosition($original_cursor_position);
@@ -37,7 +41,7 @@ function main() {
 }
 
 
-function show_name_form() {
+function create_name_form() {
 
     $app = new Form();
 
@@ -80,9 +84,9 @@ function show_name_form() {
     $app->addWidget($TextInput1);
     $app->addWidget($Label1);
 
-    $app->focus();
+    $app->nameField = $TextInput1;
 
-    return $TextInput1->getValue();
+    return $app;
 
 }
 

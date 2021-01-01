@@ -194,104 +194,11 @@ class TextInput {
 
                 if ($this->echo) {
                     $this->render();
-                    $this->positionCursor();
                 }
             }
         }
 
         $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "currentTarget"=>$this]);
-    }
-
-    public function positionCursor() {
-        ;
-    }
-
-    public function focus() {
-
-        $this->render();
-
-        $escaped = false;
-
-        $exit = false;
-
-        $codes = "";
-
-        while(!$exit) {
-
-
-
-
-
-            $key = $this->readFromBuffer();
-
-            if($escaped){
-                $escaped = false;
-                $special = $this->detectSpecial();
-
-                if ($special == "left") {
-                    $this->retrocedeCursor();
-                    $this->render();
-                } elseif ($special == "right") {
-                    $this->advanceCursor();
-                    $this->render();
-                }
-
-                $next = $this->readFromBuffer();
-                if($next === "["){
-                    $next2 = $this->readFromBuffer();
-                    $next3 = $this->readFromBuffer();
-                    $next4 = $this->readFromBuffer();
-                } else {
-                    $key = $next;
-                }
-            }
-
-            if($key === "h"){
-                $this->retrocedeCursor();
-                $this->render();
-                continue;
-            }
-            if($key === "l"){
-                $this->advanceCursor();
-                $this->render();
-                continue;
-            }
-
-            if(\ord($key) === 0){
-                continue;
-            } elseif(\ord($key) === 27){
-            $codes .= \ord($key)." ";
-             Terminal::echoAt(3, 23, $codes);
-                $escaped = true;
-                continue;
-            } elseif(\ord($key) === 10){
-                $exit = true;
-            } elseif(\ord($key) === 127){
-                $this->str->remove(-1);
-                $this->retrocedeCursor();
-                $this->render();
-            } elseif(\ord($key) === 9){
-                // should pass focus to next input element
-            } else {
-                $this->str->insert($key);
-
-                $this->advanceCursor();
-
-                if ($this->echo) {
-                    $this->render();
-                }
-            }
-
-            $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "currentTarget"=>$this]);
-
-            $codes .= \ord($key)." ";
-             Terminal::echoAt(3, 23, $codes);
-        }
-        return $this->str->getValue();
-    }
-
-    public function detectSpecial() {
-        ;
     }
 
     public function positionAtCursor() {
