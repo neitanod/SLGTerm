@@ -40,7 +40,7 @@ class EditableString {
         }
 
         if($count > 0) {
-            $from2 = min($from2+1, $this->lenght());
+            $from2 = min($from2+1, $this->length());
         }
 
         $this->value =

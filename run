@@ -18,59 +18,74 @@ use SLGTerm\Spinner;
 use SLGTerm\Input;
 
 
+return main();
 
 
-// Save screen and restore at the end.
-$original_cursor_position = Cursor::getPosition();
-Terminal::saveContents();
+function main() {
+    // Save screen and restore at the end.
+    $original_cursor_position = Cursor::getPosition();
+    Terminal::saveContents();
+
+    $user_name = show_name_form();
+
+    Terminal::restoreContents();
+    Cursor::setPosition($original_cursor_position);
+
+    echo "Hello ".$user_name."!!\n";
+
+    return 0;
+}
 
 
-$app = new Form();
+function show_name_form() {
 
-$StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
-    ->bgColor("green")
-    ->fgColor("black")
-    ->render();
+    $app = new Form();
 
-$StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
-    ->bgColor("white")
-    ->fgColor("green")
-    ->render();
-
-$app->on("key", function( $event ) use ($StatusBar) {
-    $key = $event->getData('key');
-    $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
+        ->bgColor("green")
+        ->fgColor("black")
         ->render();
-});
 
-$app->on("key", function( $event ) {
-    $key = $event->getData('key');
-    if($key == "<esc>") {
-        $event->getData('controller')->exit = true;
-    }
-});
+    $StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
+        ->bgColor("white")
+        ->fgColor("green")
+        ->render();
 
-$Label1 = (new Label(" Enter your name: ", 3, 3))
-    ->bgColor("green")
-    ->fgColor("black");
+    $app->on("key", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
 
-$TextInput1 = (new TextInput( 22, 3))
-    ->bgColor("cyan");
-    //->width(25);
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<esc>") {
+            $event->getData('controller')->exit = true;
+        }
+    });
 
-$TextInput1->on("input", function( $event ) use ($StatusBar2) {
-    $StatusBar2->setValue($event->getData('value'))->render();
-});
+    $Label1 = (new Label(" Enter your name: ", 3, 3))
+        ->bgColor("green")
+        ->fgColor("black");
 
-$app->addWidget($TextInput1);
-$app->addWidget($Label1);
+    $TextInput1 = (new TextInput( 22, 3))
+        ->bgColor("cyan");
+        //->width(25);
 
-$app->focus();
+    $TextInput1->on("input", function( $event ) use ($StatusBar2, $TextInput1) {
+        $StatusBar2->setValue($event->getData('value'))->render();
+        $TextInput1->render();
+    });
 
-Terminal::restoreContents();
-Cursor::setPosition($original_cursor_position);
+    $app->addWidget($TextInput1);
+    $app->addWidget($Label1);
 
-return;
+    $app->focus();
+
+    return $TextInput1->getValue();
+
+}
+
 
 
 

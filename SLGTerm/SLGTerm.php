@@ -165,7 +165,6 @@ class TextInput {
 
     public function handleInput( $event ) {
 
-        Terminal::echoAt(Terminal::cols()-10, 3, "W");
         $this->render();
         $key = $event->getData("key");
 
@@ -181,6 +180,9 @@ class TextInput {
             $this->str->remove(-1);
             $this->retrocedeCursor();
             $this->render();
+        } elseif($key === '<delete>'){
+            $this->str->remove(1);
+            $this->render();
         } elseif($key === '<tab>'){
             // should pass focus to next input element
         } else {
@@ -192,11 +194,16 @@ class TextInput {
 
                 if ($this->echo) {
                     $this->render();
+                    $this->positionCursor();
                 }
             }
         }
 
         $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "currentTarget"=>$this]);
+    }
+
+    public function positionCursor() {
+        ;
     }
 
     public function focus() {
