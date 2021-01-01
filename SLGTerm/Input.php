@@ -37,17 +37,24 @@ class Input {
             self::$mustCleanup = true;
         }
 
-        $timeout = (microtime(true)+0.1);
-
+        $timeout = (microtime(true)+0.02);
         do {
+            $read_something = false;
+            $done_reading = true;
+            for( $i = 0 ; $i < 7 ; $i++) {
 
-            $read = fgetc(STDIN);
-
-            if (\ord($read) > 0) {
-                static::$buffer = static::$buffer . $read;
+                $read = fgetc(STDIN);
+                if (\ord($read) > 0) {
+                    $read_something = true;
+                    $done_reading = false;
+                    static::$buffer = static::$buffer . $read;
+                } elseif (!$done_reading && \ord($read) == 0) {
+                    $done_reading = true;
+                }
             }
-
-        } while (\ord($read) == 0 && (microtime(true) <= $timeout));
+            $timed_out = (microtime(true) > $timeout);
+        } while ( !$timed_out && !$done_reading );
+        // } while ( !$done_reading );
 
         static::$spinner->advance();
 
@@ -55,17 +62,20 @@ class Input {
             self::readCleanup();
         }
 
-        return static::consume(microtime(true) > $timeout);
+        return static::consume($timed_out);
     }
 
-    public static function consume($timeout = false) {
-        if(\ord(static::$buffer)==27 && strlen(static::$buffer) == 1) {
-            if ($timeout) {
-                // read() timed out, so we are going to consider ESC as actual key,
-                // not escape character.
+    public static function consume($timed_out = false) {
+        if(
+            (isset(static::$buffer[0]) && \ord(static::$buffer[0]) == 27) &&
+            ( (isset(static::$buffer[1]) && \ord(static::$buffer[1]) != 91) || $timed_out )
+        ) {
+            // escape came with additional chars and it's not a scape sequence,
+            // or read() timed out, so we are going to consider ESC as actual key,
+            // not escape character.
+                if($timed_out) echo "TIMED OUT\n";
                 static::$buffer = mb_substr(static::$buffer, 1);
                 return "esc";
-            } else return false;
         }
         $input = static::consumeOne(static::$known_sequences, []);
         return $input > -1 ? $input : false;
@@ -83,7 +93,6 @@ class Input {
                             return $found;
                         } elseif($found === -1) {
                             static::$buffer = $current_char . static::$buffer;
-                            Terminal::echoAt(30,10, "RESTORING: [".\ord($current_char)."] (". static::$buffer.")");
                             return -1;
                         } elseif($found) {
                             return $found;

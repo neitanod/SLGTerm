@@ -32,9 +32,6 @@ function non_block_read_1() {
 }
 
 function non_block_read_2() {
-    Input::readPrepare();
-    $data = Input::read();
-    Input::readCleanup();
     return $data;
 }
 
@@ -57,13 +54,17 @@ Terminal::saveContents();
 
 $spinner = new Spinner(Terminal::cols()-3, 2);
 
-while(1) {
+Input::readPrepare();
+$exit = false;
+while( !$exit ) {
     $chars = [];
-    if($chars = non_block_read_2()) {
+    if($chars = Input::read()) {
         if(!is_array($chars)) $chars = [$chars];
         foreach ( $chars as $char ) {
-            echo json_encode($char)." => \"".\ord($char)."\",\n";
+            echo "<".$char.">\n";
+            // echo json_encode($char)." => \"".\ord($char)."\",\n";
             // handle your input here
+            if($char == "q") $exit = true;
         }
 
     } else {
@@ -72,6 +73,7 @@ while(1) {
         time_nanosleep(0, 100 * 1000000);
     }
 }
+Input::readCleanup();
 
 
 
