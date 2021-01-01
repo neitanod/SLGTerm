@@ -8,7 +8,7 @@ require("SLGTerm/Spinner.php");
 require("SLGTerm/Input.php");
 
 use SLGTerm\box;
-use SLGTerm\Controller;
+use SLGTerm\Form;
 use SLGTerm\Terminal;
 use SLGTerm\Terminal as T;
 use SLGTerm\Cursor;
@@ -25,20 +25,25 @@ $original_cursor_position = Cursor::getPosition();
 Terminal::saveContents();
 
 
-$controller = new Controller();
+$app = new Form();
 
 $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
     ->bgColor("green")
     ->fgColor("black")
     ->render();
 
-$controller->on("key", function( $event ) use ($StatusBar) {
+$StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
+    ->bgColor("white")
+    ->fgColor("green")
+    ->render();
+
+$app->on("key", function( $event ) use ($StatusBar) {
     $key = $event->getData('key');
     $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
         ->render();
 });
 
-$controller->on("key", function( $event ) {
+$app->on("key", function( $event ) {
     $key = $event->getData('key');
     if($key == "<esc>") {
         $event->getData('controller')->exit = true;
@@ -53,10 +58,14 @@ $TextInput1 = (new TextInput( 22, 3))
     ->bgColor("cyan");
     //->width(25);
 
-$controller->addWidget($Label1);
-$controller->addWidget($TextInput1);
+$TextInput1->on("input", function( $event ) use ($StatusBar2) {
+    $StatusBar2->setValue($event->getData('value'))->render();
+});
 
-$controller->loop();
+$app->addWidget($TextInput1);
+$app->addWidget($Label1);
+
+$app->focus();
 
 Terminal::restoreContents();
 Cursor::setPosition($original_cursor_position);

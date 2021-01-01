@@ -23,9 +23,9 @@ class EditableString {
 
     public function insert(string $chars) {
         $this->value =
-            substr($this->value, 0, $this->cursorPosition) .
+            mb_substr($this->value, 0, $this->cursorPosition) .
             $chars .
-            substr($this->value, $this->cursorPosition);
+            mb_substr($this->value, $this->cursorPosition);
         return $this;
     }
 
@@ -44,8 +44,8 @@ class EditableString {
         }
 
         $this->value =
-            substr($this->value, $from, $to) .
-            substr($this->value, $from2, $to2);
+            mb_substr($this->value, $from, $to) .
+            mb_substr($this->value, $from2, $to2);
         return $this;
     }
 

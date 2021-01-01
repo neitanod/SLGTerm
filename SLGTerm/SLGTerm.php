@@ -6,19 +6,20 @@ require_once(__DIR__."/TraitTimeable.php");
 require_once(__DIR__."/TraitColoreable.php");
 require_once(__DIR__."/EditableString.php");
 
-class Controller {
+class Form {
 
     use Observable;
     // use Timeable;
 
     protected $widgets = [];
+    protected $focused_widget = null;
     public $exit = false;
 
     public function __construct() {
         $this->init_observable();
     }
 
-    public function loop() {
+    public function focus() {
 
         $this->render();
 
@@ -35,6 +36,17 @@ class Controller {
                         "key"=>$char,
                         "controller"=>$this
                     ]);
+
+                    if(
+                        isset($this->widgets[$this->focused_widget])
+                        && is_callable([$this->widgets[$this->focused_widget],"handleInput"])
+                    ) {
+                        $this->widgets[$this->focused_widget]->handleInput(
+                            new Event( 'key', [
+                                'key'=>$char,
+                                'controller'=>$this
+                            ]) );
+                    }
                 }
 
             } else {
@@ -49,6 +61,9 @@ class Controller {
 
     public function addWidget($widget) {
         $this->widgets[] = $widget;
+        if (is_null($this->focused_widget)) {
+            $this->focused_widget = 0;
+        }
     }
 
     public  function render() {
@@ -148,8 +163,40 @@ class TextInput {
         return $this;
     }
 
-    public function input($event) {
+    public function handleInput( $event ) {
+
+        Terminal::echoAt(Terminal::cols()-10, 3, "W");
+        $this->render();
         $key = $event->getData("key");
+
+        if ($key == "<left>") {
+            $this->retrocedeCursor();
+            $this->render();
+        } elseif ($key == "<enter>") {
+            // Ignore
+        } elseif ($key == "<right>") {
+            $this->advanceCursor();
+            $this->render();
+        } elseif($key === '<backspace>'){
+            $this->str->remove(-1);
+            $this->retrocedeCursor();
+            $this->render();
+        } elseif($key === '<tab>'){
+            // should pass focus to next input element
+        } else {
+            if (mb_strlen($key) == 1) {
+
+                $this->str->insert($key);
+
+                $this->advanceCursor();
+
+                if ($this->echo) {
+                    $this->render();
+                }
+            }
+        }
+
+        $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "currentTarget"=>$this]);
     }
 
     public function focus() {

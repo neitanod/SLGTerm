@@ -24,7 +24,8 @@ class Input {
             ],
         ],
         127 => "<backspace>",
-        9 => "<tab>"
+        9 => "<tab>",
+        10 => "<enter>",
     ];
 
     public static function read() {
