@@ -1,13 +1,7 @@
 #!/usr/bin/env php
 <?php
-require("SLGTerm/SLGTerm.php");
-require("SLGTerm/Terminal.php");
-require("SLGTerm/Cursor.php");
-require("SLGTerm/Label.php");
-require("SLGTerm/Spinner.php");
-require("SLGTerm/Input.php");
+require(__DIR__."/SLGTerm/autoload.php");
 
-use SLGTerm\box;
 use SLGTerm\Form;
 use SLGTerm\Terminal;
 use SLGTerm\Terminal as T;
@@ -15,8 +9,6 @@ use SLGTerm\Cursor;
 use SLGTerm\TextInput;
 use SLGTerm\Label;
 use SLGTerm\Spinner;
-use SLGTerm\Input;
-
 
 return main();
 

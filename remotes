@@ -1,0 +1,133 @@
+#!/usr/bin/env php
+<?php
+require(__DIR__."/SLGTerm/autoload.php");
+
+use SLGTerm\Form;
+use SLGTerm\Terminal;
+use SLGTerm\Terminal as T;
+use SLGTerm\Cursor;
+use SLGTerm\TextInput;
+use SLGTerm\Label;
+
+return main();
+
+
+function main() {
+    // Save screen and restore at the end.
+    $original_cursor_position = Cursor::getPosition();
+    Terminal::saveContents();
+
+    $remotes = load_remotes();
+
+    if( !$remotes ) {
+       echo "No git remotes on current directory.";
+       return 1;
+    }
+
+    $app = create_main_form($remotes);
+
+    $app->focus();
+
+    Terminal::restoreContents();
+    Cursor::setPosition($original_cursor_position);
+
+    // This demo does nothing
+    // but we can compare data with original and
+    // run git to rename remotes or changing the urls.
+
+    echo "\n";
+    echo "If this where a real app all remotes would have been updated.\n";
+
+    return 0;
+}
+
+function load_remotes() {
+    // Harcoded for the demo but can be obtained via
+    // git remote and git remote get-url
+    return [
+        ['name'=>'origin', 'url'=>'git@github.com:neitanod/SLGTerm.git'],
+        ['name'=>'bitbucket', 'url'=>'git@bitbucket.org:neitanod/SLGTerm.git'],
+    ];
+}
+
+function create_main_form($remotes) {
+
+    $app = new Form();
+
+    $Title = (new Label(" Edit GIT remotes: ", 3, 2));
+
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
+        ->bgColor("green")
+        ->fgColor("black");
+
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
+        ->bgColor("green")
+        ->fgColor("black");
+
+    $app->on("key", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<esc>") {
+            $event->getData('controller')->exit = true;
+            // setting exit to true will break the loop on next iteration
+        }
+    });
+
+    $Controls = [];
+    $row = 2;
+
+    foreach ($remotes as $remote) {
+
+        $row++;
+        $row++;
+
+        $NextControl = (new TextInput( 10, $row))
+            ->bgColor("cyan")
+            ->width(10);
+
+        $NextControl->setValue($remote['name']);
+
+        $app->addWidget($NextControl);
+
+        $NextControl = (new Label(" Name: ", 3, $row));
+        $app->addWidget($NextControl);
+
+        $NextControl = (new TextInput( 26, $row))
+            ->bgColor("cyan")
+            ->width(40);
+
+        $NextControl->setValue($remote['url']);
+
+        $app->addWidget($NextControl);
+
+        $NextControl = (new Label(" URL: ", 20, $row));
+        $app->addWidget($NextControl);
+
+        $RemoveButton = (new Label("  Delete  ", 70, $row))
+            ->bgColor("red");
+
+        $app->addWidget($RemoveButton);
+    }
+
+    $app->addWidget($Title);
+    $app->addWidget($StatusBar);
+
+    $CancelButton = (new Label("  Cancel  ", 4, $row+3))
+        ->bgColor("red");
+
+    $app->addWidget($CancelButton);
+
+    $DoneButton = (new Label("  Done  ", 18, $row+3))
+        ->bgColor("green");
+
+    $app->addWidget($DoneButton);
+
+
+    return $app;
+
+}
