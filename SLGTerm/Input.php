@@ -37,24 +37,32 @@ class Input {
             self::$mustCleanup = true;
         }
 
-        $timeout = (microtime(true)+0.02);
-        do {
-            $read_something = false;
-            $done_reading = true;
-            for( $i = 0 ; $i < 7 ; $i++) {
+        $timeout = (microtime(true)+0.01);
+        $read_something = false;
+        $done_reading = 0;
 
+        do {
+
+            for( $i = 0 ; $i < 10 ; $i++) {
                 $read = fgetc(STDIN);
                 if (\ord($read) > 0) {
                     $read_something = true;
-                    $done_reading = false;
+                    $done_reading = 0;
                     static::$buffer = static::$buffer . $read;
-                } elseif (!$done_reading && \ord($read) == 0) {
-                    $done_reading = true;
+                } elseif ($read_something && \ord($read) == 0) {
+                    //echo "[".$done_reading."]\n";
+                    $done_reading++;
                 }
             }
+
             $timed_out = (microtime(true) > $timeout);
-        } while ( !$timed_out && !$done_reading );
-        // } while ( !$done_reading );
+
+        } while ( !$timed_out && $done_reading < 5 );
+        //} while ( $done_reading < 5 );
+        //} while ( !$done_reading );
+
+        // if($timed_out) echo ">>>TIMED OUT\n";
+        // if($done_reading) echo ">>>DONE READING\n";
 
         static::$spinner->advance();
 
@@ -62,10 +70,11 @@ class Input {
             self::readCleanup();
         }
 
-        return static::consume($timed_out);
+        return static::consume($timed_out, $done_reading);
     }
 
-    public static function consume($timed_out = false) {
+    public static function consume($timed_out = false, $done_reading = false) {
+
         if(
             (isset(static::$buffer[0]) && \ord(static::$buffer[0]) == 27) &&
             ( (isset(static::$buffer[1]) && \ord(static::$buffer[1]) != 91) || $timed_out )
@@ -73,10 +82,19 @@ class Input {
             // escape came with additional chars and it's not a scape sequence,
             // or read() timed out, so we are going to consider ESC as actual key,
             // not escape character.
-                if($timed_out) echo "TIMED OUT\n";
+                //if($timed_out) echo "TIMED OUT\n";
+                if( isset(static::$buffer[1]) && \ord(static::$buffer[1]) == 91) {
+                    return static::consume();
+                }
                 static::$buffer = mb_substr(static::$buffer, 1);
-                return "esc";
+                $more = static::consume();
+                if(is_array($more)) {
+                    return array_merge(["esc"], $more);
+                } else {
+                    return ["esc"];
+                }
         }
+
         $input = static::consumeOne(static::$known_sequences, []);
         return $input > -1 ? $input : false;
     }

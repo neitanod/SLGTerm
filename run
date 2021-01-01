@@ -59,7 +59,7 @@ $exit = false;
 while( !$exit ) {
     $chars = [];
     if($chars = Input::read()) {
-        if(!is_array($chars)) $chars = [$chars];
+        //if(!is_array($chars)) $chars = [$chars];
         foreach ( $chars as $char ) {
             echo "<".$char.">\n";
             // echo json_encode($char)." => \"".\ord($char)."\",\n";
