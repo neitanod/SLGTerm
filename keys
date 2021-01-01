@@ -1,0 +1,34 @@
+#!/usr/bin/env php
+<?php
+require(__DIR__."/SLGTerm/autoload.php");
+
+use SLGTerm\Form;
+use SLGTerm\Terminal;
+use SLGTerm\Cursor;
+
+return main();
+
+
+function main() {
+
+    echo "Type '<tab>' to quit.\n";
+
+    $app = new Form();
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<tab>") {
+            $event->getData('controller')->exit = true;
+            // setting exit to true will break the loop on next iteration
+        }
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        echo json_encode($event->getData()).( mb_strlen($key)==1 ? " [".\ord($key)."]" : "" )."\n";
+    });
+
+    $app->focus();
+
+    return 0;
+}
