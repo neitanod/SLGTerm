@@ -47,13 +47,11 @@ function create_name_form() {
 
     $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
         ->bgColor("green")
-        ->fgColor("black")
-        ->render();
+        ->fgColor("black");
 
     $StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
         ->bgColor("white")
-        ->fgColor("green")
-        ->render();
+        ->fgColor("green");
 
     $app->on("key", function( $event ) use ($StatusBar) {
         $key = $event->getData('key');
@@ -65,6 +63,7 @@ function create_name_form() {
         $key = $event->getData('key');
         if($key == "<esc>") {
             $event->getData('controller')->exit = true;
+            // setting exit to true will break the loop on next iteration
         }
     });
 
