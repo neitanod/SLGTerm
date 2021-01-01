@@ -1,7 +1,7 @@
 # SLGTerm
 Simple to use graphical widgets for the Linux terminal written in PHP.
 
-Beware: This project is in early stages.  It has not been used in production yet.
+Beware: This project is in its early stages.  It has not been used in production yet.
 
 This library helps you create simple screens ("forms") with widgets to be used in the Linux console (locally or via SSH).
 
