@@ -1,0 +1,124 @@
+<?php
+namespace SLGTerm;
+
+require_once(__DIR__."/TraitObservable.php");
+require_once(__DIR__."/TraitTimeable.php");
+
+class Form {
+
+    use Observable;
+    // use Timeable;
+
+    protected $widgets = [];
+    protected $focused_widget = null;
+    protected $show = false;
+    protected $parent = null;
+
+    public function __construct() {
+        $this->init_observable();
+    }
+
+    public function show() {
+        $this->show = true;
+        $this->render();
+    }
+
+    public function hide() {
+        $this->show = false;
+        if( $this->parent && method_exists($this->parent, "render") ) {
+            $this->parent->render();
+        }
+    }
+
+    public function setParent($parent) {
+        $this->parent = $parent;
+    }
+
+    public function focus() {
+
+        $this->show();
+
+        Input::readPrepare();
+
+        while($this->show) {
+            $chars = [];
+            if($chars = Input::read()) {
+                //if(!is_array($chars)) $chars = [$chars];
+                foreach ( $chars as $char ) {
+                    $this->emit( "key", [
+                        "key"=>$char,
+                        "controller"=>$this
+                    ]);
+
+                    if(
+                        isset($this->widgets[$this->focused_widget])
+                        && is_callable([$this->widgets[$this->focused_widget],"handleInput"])
+                    ) {
+                        $this->widgets[$this->focused_widget]->handleInput(
+                            new Event( 'key', [
+                                'key'=>$char,
+                                'controller'=>$this
+                            ]) );
+                    }
+                }
+
+            } else {
+                // perform your processing here
+                // $spinner->advance();
+                // time_nanosleep(0, 100 * 1000000);
+            }
+        }
+
+        Input::readCleanup();
+    }
+
+    public function focusPrevious() {
+        $old_focused = $this->focused_widget;
+        $done = false;
+        while (!$done) {
+            $this->focused_widget--;
+            if( $old_focused == $this->focused_widget ) break;
+            if( 0 >= $this->focused_widget ) {
+                $this->focused_widget = count($this->widgets)-1;
+            }
+            if(method_exists($this->widgets[$this->focused_widget], "focus")){
+                $done = true;
+                $this->widgets[$this->focused_widget]->focus();
+            }
+        }
+        return $this;
+    }
+
+    public function focusNext() {
+        $old_focused = $this->focused_widget;
+        $done = false;
+        while (!$done) {
+            $this->focused_widget++;
+            if( $old_focused == $this->focused_widget ) break;
+            if( count($this->widgets) <= $this->focused_widget ) {
+                $this->focused_widget = 0;
+            }
+            if(method_exists($this->widgets[$this->focused_widget], "focus")){
+                $done = true;
+                $this->widgets[$this->focused_widget]->focus();
+            }
+        }
+        return $this;
+    }
+
+
+    public function addWidget($widget) {
+        $this->widgets[] = $widget;
+        if (is_null($this->focused_widget)) {
+            $this->focused_widget = 0;
+        }
+    }
+
+    public  function render() {
+        if( !$this->show ) exit;
+
+        foreach($this->widgets as $widget ) {
+            $widget->render();
+        }
+    }
+}
