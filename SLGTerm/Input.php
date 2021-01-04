@@ -10,22 +10,51 @@ class Input {
     protected static $buffer = "";
     protected static $known_sequences = [
         27 => [
-            0 => "<esc>",
+            0 => "<ESC>",
+            79 => [
+                80 => "<F1>",
+                81 => "<F2>",
+                82 => "<F3>",
+                83 => "<F4>",
+            ],
             91 => [
-                65 => "<up>",
-                66 => "<down>",
-                67 => "<right>",
-                68 => "<left>",
-                70 => "<end>",
-                72 => "<home>",
+                49 => [
+                    53 => [ 126 => "<F5>", ],
+                    55 => [ 126 => "<F6>", ],
+                    56 => [ 126 => "<F7>", ],
+                    57 => [ 126 => "<F8>", ],
+                ],
+                50 => [
+                    48 => [ 126 => "<F9>", ],
+                    49 => [ 126 => "<F10>", ],
+                    51 => [ 126 => "<F11>", ],
+                    52 => [ 126 => "<F12>", ],
+                    126 => "<INSERT>",
+                ],
+                53 => [
+                    126 => "<PAGEUP>",
+                ],
+                54 => [
+                    126 => "<PAGEDOWN>",
+                ],
+                65 => "<UP>",
+                66 => "<DOWN>",
+                67 => "<RIGHT>",
+                68 => "<LEFT>",
+                68 => "<BEGIN>",
+                70 => "<END>",
+                72 => "<HOME>",
                 51 => [
-                    126 => "<delete>",
+                    126 => "<DELETE>",
                 ],
             ],
         ],
-        127 => "<backspace>",
-        9 => "<tab>",
-        10 => "<enter>",
+        13 => [
+            10 => "<ENTER>",
+        ],
+        127 => "<BACKSPACE>",
+        9 => "<TAB>",
+        10 => "<ENTER>",
     ];
 
     public static function read() {
@@ -44,6 +73,7 @@ class Input {
             for( $i = 0 ; $i < 10 ; $i++) {
                 $read = fgetc(STDIN);
                 if (\ord($read) > 0) {
+                    $timeout = (microtime(true)+0.01);
                     $read_something = true;
                     $done_reading = 0;
                     static::$buffer = static::$buffer . $read;
@@ -65,58 +95,44 @@ class Input {
 
     public static function consume($timed_out = false, $done_reading = false) {
 
-        if(
-            (isset(static::$buffer[0]) && \ord(static::$buffer[0]) == 27) &&
-            ( (isset(static::$buffer[1]) && \ord(static::$buffer[1]) != 91) || $timed_out )
-        ) {
-            // escape came with additional chars and it's not a scape sequence,
-            // or read() timed out, so we are going to consider ESC as actual key,
-            // not escape character.
-            if( isset(static::$buffer[1]) && \ord(static::$buffer[1]) == 91) {
-                return static::consume();
-            }
-            static::$buffer = mb_substr(static::$buffer, 1);
-            $more = static::consume();
-            if(is_array($more)) {
-                return array_merge(["<esc>"], $more);
-            } else {
-                return ["<esc>"];
-            }
-        }
-
-        $input = static::consumeOne(static::$known_sequences, []);
+        $input = static::consumeOne(static::$known_sequences, [], $timed_out || $done_reading);
         return $input > -1 ? $input : false;
     }
 
-    public static function consumeOne($known, $previous_chars) {
+    public static function consumeOne($known, $previous_chars, $timed_out) {
         if(strlen(static::$buffer) > 0) {
             $current_char = mb_substr(static::$buffer, 0, 1);
             static::$buffer = mb_substr(static::$buffer, 1);
             if(array_key_exists(\ord($current_char), $known)) {
                 if (is_string($known[\ord($current_char)])) return [$known[\ord($current_char)]];
                 if (is_array($known[\ord($current_char)])) {
-                        $found = static::consumeOne($known[\ord($current_char)], array_merge($previous_chars, [\ord($current_char) == 27 ? "<esc>" : $current_char]));
-                        if ($found === false) {
-                            return $found;
-                        } elseif($found === -1) {
+                    if ($timed_out && (strlen(static::$buffer) == 0) && array_key_exists(0, $known[\ord($current_char)])) {
+                        return [$known[\ord($current_char)][0]];
+                    }
+                    $found = static::consumeOne($known[\ord($current_char)], array_merge($previous_chars, [\ord($current_char) == 27 ? "<ESC>" : $current_char]), $timed_out);
+                    if ($found === false) {
+                        return $found;
+                    } elseif($found === -1) {
+                        static::$buffer = $current_char . static::$buffer;
+                        return -1;
+                    } elseif($found) {
+                        return $found;
+                    } else {
+                        if(array_key_exists(0, $known[\ord($current_char)]) && strlen(static::$buffer)>0) {
+                            return [$known[\ord($current_char)][0]];
+                        } elseif($timed_out) {
+                            return $current_char;
+                        } else {
+                            // restore buffer and keep waiting for input
                             static::$buffer = $current_char . static::$buffer;
                             return -1;
-                        } elseif($found) {
-                            return $found;
-                        } else {
-                            if(array_key_exists(0, $known[\ord($current_char)]) && strlen(static::$buffer)>0) {
-                                return [$known[\ord($current_char)][0]];
-                            } else {
-                                // restore buffer and keep waiting for input
-                                static::$buffer = $current_char . static::$buffer;
-                                return -1;
-                            }
                         }
+                    }
                 }
-                $current_char = \ord($current_char) == 27 ? "<esc>" : $current_char;
+                $current_char = \ord($current_char) == 27 ? "<ESC>" : $current_char;
                 return array_merge($previous_chars, [$current_char]); // shouldn't execute ever
             } else {
-                $current_char = \ord($current_char) == 27 ? "<esc>" : $current_char;
+                $current_char = \ord($current_char) == 27 ? "<ESC>" : $current_char;
                 return array_merge($previous_chars, [$current_char]);
             }
         }

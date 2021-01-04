@@ -168,22 +168,22 @@ class TextInput {
         $this->render();
         $key = $event->getData("key");
 
-        if ($key == "<left>") {
+        if ($key == "<LEFT>") {
             $this->retrocedeCursor();
             $this->render();
-        } elseif ($key == "<enter>") {
+        } elseif ($key == "<ENTER>") {
             // Ignore
-        } elseif ($key == "<right>") {
+        } elseif ($key == "<RIGHT>") {
             $this->advanceCursor();
             $this->render();
-        } elseif($key === '<backspace>'){
+        } elseif($key === '<BACKSPace>'){
             $this->str->remove(-1);
             $this->retrocedeCursor();
             $this->render();
-        } elseif($key === '<delete>'){
+        } elseif($key === '<DELETE>'){
             $this->str->remove(1);
             $this->render();
-        } elseif($key === '<tab>'){
+        } elseif($key === '<TAB>'){
             // should pass focus to next input element
         } else {
             if (mb_strlen($key) == 1) {

@@ -11,13 +11,13 @@ return main();
 
 function main() {
 
-    echo "Type '<tab>' to quit.\n";
+    echo "Type '<TAB>' to quit.\n";
 
     $app = new Form();
 
     $app->on("key", function( $event ) {
         $key = $event->getData('key');
-        if($key == "<tab>") {
+        if($key == "<TAB>") {
             $event->getData('controller')->exit = true;
             // setting exit to true will break the loop on next iteration
         }
