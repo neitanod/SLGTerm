@@ -176,7 +176,7 @@ class TextInput {
         } elseif ($key == "<RIGHT>") {
             $this->advanceCursor();
             $this->render();
-        } elseif($key === '<BACKSPace>'){
+        } elseif($key === '<BACKSPACE>'){
             $this->str->remove(-1);
             $this->retrocedeCursor();
             $this->render();
