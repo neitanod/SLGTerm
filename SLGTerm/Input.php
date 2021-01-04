@@ -41,7 +41,7 @@ class Input {
                 66 => "<DOWN>",
                 67 => "<RIGHT>",
                 68 => "<LEFT>",
-                68 => "<BEGIN>",
+                69 => "<BEGIN>",
                 70 => "<END>",
                 72 => "<HOME>",
                 51 => [
