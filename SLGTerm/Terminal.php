@@ -53,6 +53,10 @@ class Terminal {
         }
     }
 
+    public static function underline() {
+        static::echo(static::ESCAPE."4m");
+    }
+
     public static function bold() {
         static::echo(static::ESCAPE."1m");
     }

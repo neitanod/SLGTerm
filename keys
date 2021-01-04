@@ -11,7 +11,11 @@ return main();
 
 function main() {
 
+    Terminal::underline();
+
     echo "Type '<TAB>' to quit.\n";
+
+    Terminal::normal();
 
     $app = new Form();
 
