@@ -5,8 +5,11 @@ namespace SLGTerm;
 trait Coloreable {
 
     protected $fgColor = "white";
+    protected $fgColorFocus = "white";
     protected $bgColor = "black";
+    protected $bgColorFocus = "white";
     protected $weight  = "normal";
+    protected $underline = false;
 
     public function fgColor($color) {
         $this->fgColor = $color;
@@ -34,13 +37,17 @@ trait Coloreable {
     }
 
     public function setColors() {
-        if ( $this->weight === "normal") {
-            Terminal::normal();
-        } elseif ( $this->weight === "bold") {
+        Terminal::normal();
+
+        if ( $this->weight === "bold") {
             Terminal::bold();
         } elseif ( $this->weight === "dim") {
             Terminal::dim();
         }
+        if ( $this->underline ) {
+            Terminal::underline();
+        }
+
         Terminal::fgColor($this->fgColor);
         Terminal::bgColor($this->bgColor);
     }

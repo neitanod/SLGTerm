@@ -9,4 +9,5 @@ require(__DIR__."/Form.php");
 require(__DIR__."/Box.php");
 require(__DIR__."/TextInput.php");
 require(__DIR__."/Label.php");
+require(__DIR__."/Button.php");
 require(__DIR__."/Spinner.php");

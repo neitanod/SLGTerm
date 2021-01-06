@@ -8,6 +8,7 @@ use SLGTerm\Terminal as T;
 use SLGTerm\Cursor;
 use SLGTerm\TextInput;
 use SLGTerm\Label;
+use SLGTerm\Button;
 
 return main();
 
@@ -82,6 +83,8 @@ function create_main_form($remotes) {
         $key = $event->getData('key');
         if($key == "<TAB>") {
             $event->getData('controller')->focusNext();
+        } elseif($key == "<HOME>") {
+            $event->getData('controller')->focusPrevious();
         }
     });
 
@@ -115,7 +118,7 @@ function create_main_form($remotes) {
         $NextControl = (new Label(" URL: ", 20, $row));
         $app->addWidget($NextControl);
 
-        $RemoveButton = (new Label("  Delete  ", 70, $row))
+        $RemoveButton = (new Button("  Delete  ", 70, $row))
             ->bgColor("red");
 
         $app->addWidget($RemoveButton);
@@ -124,12 +127,12 @@ function create_main_form($remotes) {
     $app->addWidget($Title);
     $app->addWidget($StatusBar);
 
-    $CancelButton = (new Label("  Cancel  ", 4, $row+3))
+    $CancelButton = (new Button("  Cancel  ", 4, $row+3))
         ->bgColor("red");
 
     $app->addWidget($CancelButton);
 
-    $DoneButton = (new Label("  Done  ", 18, $row+3))
+    $DoneButton = (new Button("  Done  ", 18, $row+3))
         ->bgColor("green");
 
     $app->addWidget($DoneButton);

@@ -22,7 +22,7 @@ function main() {
     $app->on("key", function( $event ) {
         $key = $event->getData('key');
         if($key == "<TAB>") {
-            $event->getData('controller')->exit = true;
+            $event->getData('controller')->hide();
             // setting exit to true will break the loop on next iteration
         }
     });

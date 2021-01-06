@@ -23,6 +23,8 @@ class TextInput {
     protected $posInValue = 0;
     protected $offset = 0;
 
+    protected $hasFocus = false;
+
     public function __construct(int $col = -1, int $row = -1) {
         $this->col = $col;
         $this->row = $row;
@@ -50,7 +52,14 @@ class TextInput {
     }
 
     public function focus() {
-        ;
+        $this->hasFocus = true;
+        $result = $this->emit("focus", ["bus"=>$this->bus, "currentTarget"=>$this]);
+    }
+
+    public function blur() {
+        $this->hasFocus = false;
+        $this->render();
+        $result = $this->emit("blur", ["bus"=>$this->bus, "currentTarget"=>$this]);
     }
 
     protected function advanceCursor() {
@@ -91,6 +100,13 @@ class TextInput {
         }
 
         Cursor::move($this->col, $this->row);
+
+        if ( $this->hasFocus ) {
+            $this->underline = true;
+        } else {
+            $this->underline = false;
+        }
+
         $this->setColors();
 
         Terminal::echo($this->calculateVisible());

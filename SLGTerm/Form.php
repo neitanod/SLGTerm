@@ -72,45 +72,54 @@ class Form {
         Input::readCleanup();
     }
 
-    public function focusPrevious() {
+    public function focusWidget(int $index) {
+        $success = false;
         $old_focused = $this->focused_widget;
-        $done = false;
-        while (!$done) {
-            $this->focused_widget--;
-            if( $old_focused == $this->focused_widget ) break;
-            if( 0 >= $this->focused_widget ) {
-                $this->focused_widget = count($this->widgets)-1;
+        if(method_exists($this->widgets[$index], "focus")){
+            if(!is_null($old_focused) && method_exists($this->widgets[$old_focused], "blur")){
+                $this->widgets[$old_focused]->blur();
             }
-            if(method_exists($this->widgets[$this->focused_widget], "focus")){
-                $done = true;
-                $this->widgets[$this->focused_widget]->focus();
-            }
+            $this->widgets[$index]->focus();
+            $this->focused_widget = $index;
+            $success = true;
         }
-        return $this;
+        return $success;
     }
 
     public function focusNext() {
         $old_focused = $this->focused_widget;
+        $new_focused = $this->focused_widget;
         $done = false;
         while (!$done) {
-            $this->focused_widget++;
-            if( $old_focused == $this->focused_widget ) break;
-            if( count($this->widgets) <= $this->focused_widget ) {
-                $this->focused_widget = 0;
+            $new_focused++;
+            if( $old_focused == $new_focused ) break;
+            if( count($this->widgets) <= $new_focused ) {
+                $new_focused = 0;
             }
-            if(method_exists($this->widgets[$this->focused_widget], "focus")){
-                $done = true;
-                $this->widgets[$this->focused_widget]->focus();
-            }
+            $done = $this->focusWidget($new_focused);
         }
         return $this;
     }
 
+    public function focusPrevious() {
+        $old_focused = $this->focused_widget;
+        $new_focused = $this->focused_widget;
+        $done = false;
+        while (!$done) {
+            $new_focused--;
+            if( $old_focused == $new_focused ) break;
+            if( 0 > $new_focused ) {
+                $new_focused = count($this->widgets)-1;
+            }
+            $done = $this->focusWidget($new_focused);
+        }
+        return $this;
+    }
 
     public function addWidget($widget) {
         $this->widgets[] = $widget;
         if (is_null($this->focused_widget)) {
-            $this->focused_widget = 0;
+            $this->focusWidget(count($this->widgets)-1);
         }
     }
 
@@ -119,6 +128,10 @@ class Form {
 
         foreach($this->widgets as $widget ) {
             $widget->render();
+        }
+
+        if ( !is_null($this->focused_widget) && $this->focused_widget < (count($this->widgets)-1 ) ) {
+            $this->widgets[$this->focused_widget]->render();
         }
     }
 }
