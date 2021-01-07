@@ -49,12 +49,12 @@ class Input {
                 ],
             ],
         ],
-        13 => [
-            10 => "<ENTER>",
-        ],
-        127 => "<BACKSPACE>",
         9 => "<TAB>",
         10 => "<ENTER>",
+        11 => "<VT>",
+        12 => "<FF>",
+        13 => "<CR>",
+        127 => "<BACKSPACE>",
     ];
 
     public static function read() {

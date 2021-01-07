@@ -26,14 +26,24 @@ class Terminal {
         'blue'  => '44',
         'magenta' => '45',
         'cyan'  => '46',
-        'light_gray' => '47',
+        'white' => '47',
+        'grey' => '40;1',
+        'red2' => '41;1',
+        'green2' => '42;1',
+        'yellow2' => '43;1',
+        'blue2'  => '44;1',
+        'magenta2' => '45;1',
+        'cyan2'  => '46;1',
+        'white2' => '47;1',
     ];
 
     public const ESCAPE = "\033[";
+    public const ESCAPE256 = "\u{001b}[";
 
     protected static $mustPrepare = true;
     protected static $mustCleanup = false;
     protected static $ttyprops;
+    protected static $maxcolors = null;
 
     public static function cols() {
         return intval(exec('tput cols'));
@@ -44,12 +54,22 @@ class Terminal {
     }
 
     public static function colors() {
-        return max(8, intval(exec('tput colors')));
+        return empty(static::$maxcolors) ? static::$maxcolors = max(8, intval(exec('tput colors'))) : static::$maxcolors;
     }
 
     public static function fgColor($color) {
         if (array_key_exists($color, static::COLOR)) {
             static::echo(static::ESCAPE.(static::COLOR[$color])."m");
+        } elseif(is_numeric($color)) {
+            static::echo(static::ESCAPE256."38;5;".$color."m");
+        }
+    }
+
+    public static function bgColor($color) {
+        if (array_key_exists($color, static::BG_COLOR)) {
+            static::echo(static::ESCAPE.static::BG_COLOR[$color]."m");
+        } elseif(is_numeric($color)) {
+            static::echo(static::ESCAPE256."48;5;".$color."m");
         }
     }
 
@@ -67,12 +87,6 @@ class Terminal {
 
     public static function normal() {
         static::echo(static::ESCAPE."0m");
-    }
-
-    public static function bgColor($color) {
-        if (array_key_exists($color, static::BG_COLOR)) {
-            static::echo(static::ESCAPE.static::BG_COLOR[$color]."m");
-        }
     }
 
     public static function echo($str) {
@@ -157,12 +171,5 @@ class Terminal {
     public function restoreContents() {
         return passthru('tput rmcup');
     }
-
-
-
-
-
-
-
 
 }

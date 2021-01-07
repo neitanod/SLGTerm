@@ -3,6 +3,7 @@
 require(__DIR__."/SLGTerm/autoload.php");
 
 use SLGTerm\Form;
+use SLGTerm\Box;
 use SLGTerm\Terminal;
 use SLGTerm\Terminal as T;
 use SLGTerm\Cursor;
@@ -52,19 +53,47 @@ function load_remotes() {
     ];
 }
 
+function set_default_colors($widget) {
+    $widget->fgColor256(250)
+        ->bgColor256(235)
+        ->fgColor("white")
+        ->bgColor("black");
+}
+
+function set_info_colors($widget) {
+    $widget->fgColor256(255)
+        ->bgColor256(27)
+        ->fgColor("white")
+        ->bgColor("blue");
+}
+
+function set_success_colors($widget) {
+    $widget->fgColor256(255)
+        ->bgColor256(64)
+        ->fgColor("white")
+        ->bgColor("green");
+}
+
+function set_danger_colors($widget) {
+    $widget->fgColor256(255)
+        ->fgColor("white")
+        ->bgColor("red");
+}
+
 function create_main_form($remotes) {
 
     $app = new Form();
 
+    $Box = new Box(); // Fullscreen by default
+    set_default_colors($Box);
+
+    $app->addWidget($Box); // Use as form background, useful for clean redraws
+
     $Title = (new Label(" Edit GIT remotes: ", 3, 2));
+    set_default_colors($Title);
 
-    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
-        ->bgColor("green")
-        ->fgColor("black");
-
-    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
-        ->bgColor("green")
-        ->fgColor("black");
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()));
+    set_info_colors($StatusBar);
 
     $app->on("key", function( $event ) use ($StatusBar) {
         $key = $event->getData('key');
@@ -105,6 +134,9 @@ function create_main_form($remotes) {
         $app->addWidget($NextControl);
 
         $NextControl = (new Label(" Name: ", 3, $row));
+
+        set_default_colors($NextControl);
+
         $app->addWidget($NextControl);
 
         $NextControl = (new TextInput( 26, $row))
@@ -116,10 +148,15 @@ function create_main_form($remotes) {
         $app->addWidget($NextControl);
 
         $NextControl = (new Label(" URL: ", 20, $row));
+
+        set_default_colors($NextControl);
+
         $app->addWidget($NextControl);
 
-        $RemoveButton = (new Button("  Delete  ", 70, $row))
-            ->bgColor("red");
+        $RemoveButton = (new Button(" 🗑 Delete  ", 70, $row));
+        set_danger_colors($RemoveButton);
+
+        $RemoveButton->on("pressed", function($event) use ($app) { echo "DELETING!"; $app->render(); });
 
         $app->addWidget($RemoveButton);
     }
@@ -127,13 +164,13 @@ function create_main_form($remotes) {
     $app->addWidget($Title);
     $app->addWidget($StatusBar);
 
-    $CancelButton = (new Button("  Cancel  ", 4, $row+3))
-        ->bgColor("red");
+    $CancelButton = (new Button("  Cancel  ", 4, $row+3));
+    set_danger_colors($CancelButton);
 
     $app->addWidget($CancelButton);
 
-    $DoneButton = (new Button("  Done  ", 18, $row+3))
-        ->bgColor("green");
+    $DoneButton = (new Button("  Done  ", 18, $row+3));
+    set_success_colors($DoneButton);
 
     $app->addWidget($DoneButton);
 

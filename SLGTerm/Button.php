@@ -25,12 +25,14 @@ class Button {
     public function focus() {
         $this->hasFocus = true;
         $this->render();
+        Cursor::hide();
         $result = $this->emit("focus", ["bus"=>$this->bus, "currentTarget"=>$this]);
     }
 
     public function blur() {
         $this->hasFocus = false;
         $this->render();
+        Cursor::show();
         $result = $this->emit("blur", ["bus"=>$this->bus, "currentTarget"=>$this]);
     }
 

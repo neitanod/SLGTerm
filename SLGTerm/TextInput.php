@@ -53,6 +53,7 @@ class TextInput {
 
     public function focus() {
         $this->hasFocus = true;
+        Cursor::show();
         $result = $this->emit("focus", ["bus"=>$this->bus, "currentTarget"=>$this]);
     }
 
