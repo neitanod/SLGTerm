@@ -19,7 +19,13 @@ function main() {
     // Save screen and restore at the end.
     $original_cursor_position = Cursor::getPosition();
     Terminal::saveContents();
-    Cursor::showOnExit();
+
+    // And restore at the end.
+    register_shutdown_function( function () use ($original_cursor_position) {
+        Terminal::restoreContents();
+        Cursor::setPosition($original_cursor_position);
+        Cursor::show();
+    } );
 
     $remotes = load_remotes();
 
@@ -33,8 +39,6 @@ function main() {
     $app->show();
     $app->focus();
 
-    Terminal::restoreContents();
-    Cursor::setPosition($original_cursor_position);
 
     // This demo does nothing
     // but we can compare data with original and
