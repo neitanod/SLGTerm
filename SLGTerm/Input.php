@@ -8,6 +8,8 @@ class Input {
     protected static $mustPrepare = true;
     protected static $mustCleanup = false;
     protected static $buffer = "";
+    protected static $timers = [];
+    protected static $nextTimer = null;
     protected static $known_sequences = [
         27 => [
             0 => "<ESC>",
@@ -58,6 +60,10 @@ class Input {
     ];
 
     public static function read() {
+
+        if ( !is_null(static::$nextTimer) && microtime(true) > static::$timers[static::$nextTimer]['due']) {
+            static::executeTimer();
+        }
 
         if (self::$mustPrepare) {
             self::readPrepare();
@@ -162,6 +168,77 @@ class Input {
         system("stty '".self::$ttyprops."'");
         self::$mustPrepare = true;
         self::$mustCleanup = false;
+    }
+
+    public static function setTimeout($callable, $milliseconds) {
+        static::$timers[] = [
+            "due" => (microtime(true) + $milliseconds/1000),
+            "callback" =>  $callable
+        ];
+
+        if ( is_null(static::$nextTimer) ) {
+            end(static::$timers);
+            static::$nextTimer = key(static::$timers);
+        } else {
+            static::findNextTimer();
+        }
+
+        end(static::$timers);
+        return key(static::$timers);
+    }
+
+    public static function setInterval($callable, $milliseconds) {
+        static::$timers[] = [
+            'due' => (microtime(true) + $milliseconds/1000),
+            'callback' =>  $callable,
+            'interval' => $milliseconds
+        ];
+
+        if ( is_null(static::$nextTimer) ) {
+            static::$nextTimer = count(static::$timers)-1;
+        } else {
+            static::findNextTimer();
+        }
+
+        end(static::$timers);
+        return key(static::$timers);
+    }
+
+    protected static function findNextTimer() {
+        reset(static::$timers);
+
+
+        Terminal::echoAt(60,3, "Last Timer ID: ".static::$nextTimer);
+
+        static::$nextTimer = null;
+
+        foreach ( static::$timers as $id => $timer ) {
+        Terminal::echoAt(60,4, "Timer {$id} due: ".$timer['due']);
+            if(
+                is_null(static::$nextTimer) ||
+                static::$timers[static::$nextTimer]['due'] > $timer['due']
+            ) {
+                static::$nextTimer = $id;
+            }
+        }
+
+        Terminal::echoAt(60,5, "Next Timer ID: ".static::$nextTimer);
+    }
+
+    protected static function executeTimer() {
+        $thisTimerIndex = static::$nextTimer;
+        $thisTimer = static::$timers[$thisTimerIndex];
+        $callback  = $thisTimer['callback'];
+
+        if ( !empty($thisTimer['interval']) ) {
+            static::$timers[$thisTimerIndex]['due'] = (microtime(true) + $thisTimer['interval']/1000);
+        } else {
+            unset(static::$timers[$thisTimerIndex]);
+        }
+
+        static::findNextTimer();
+
+        $callback();
     }
 
 }

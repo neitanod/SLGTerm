@@ -7,17 +7,20 @@ class Spinner {
     protected $step = 0;
     protected $step_count = 6;
 
-        // protected $steps = '|/-\\|/-\\';
-        // protected $steps = [
-        //     '⣇', '⡏', '⠟', '⠻',
-        //     '⢹', '⣸', '⣴', '⣦'
-        // ];
-        // protected $steps = [
-        //     '⡇', '⠏', '⠛', '⠹',
-        //     '⢸', '⣰', '⣤', '⣆'
-        // ];
+    // // Braille large, 5 dots
+    // protected $steps = '|/-\\|/-\\';
+    // protected $steps = [
+    //     '⣇', '⡏', '⠟', '⠻',
+    //     '⢹', '⣸', '⣴', '⣦'
+    // ];
+    //
+    // // Braille large
+    // protected $steps = [
+    //     '⡇', '⠏', '⠛', '⠹',
+    //     '⢸', '⣰', '⣤', '⣆'
+    // ];
 
-        // Preferred spinner: Braille small
+    // Preferred spinner: Braille small
     protected $steps = [
         '⠏', '⠛', '⠹',
         '⠼', '⠶', '⠧',
