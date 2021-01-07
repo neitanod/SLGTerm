@@ -2,7 +2,6 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
-require_once(__DIR__."/TraitTimeable.php");
 
 class Form {
 
