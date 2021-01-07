@@ -46,7 +46,7 @@ function main() {
         echo "\n";
         Terminal::fgColor("black");
         Terminal::bgColor("green");
-        echo "If this where a real app all remotes would have been updated.\n";
+        echo "If this was a real app all remotes would have been updated.\n";
     } else {
         Terminal::fgColor("white");
         Terminal::bold();

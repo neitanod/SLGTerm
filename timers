@@ -24,7 +24,7 @@ function main() {
     Input::setInterval( function()  { Terminal::echoAt(60,3, date("Y-m-d H:i:s")); }, 200 );
     Input::setInterval( function() use ($app) { $app->spinner->advance(); }, 100 );
 
-    Input::setTimeout( function() { (new Label("Time's up.  Good bye!",60,5))->bgColor('red')->fgColor('yellow')->render(); }, 2000 );
+    Input::setTimeout( function() { (new Label("Hurry up!",60,5))->bgColor('red')->fgColor('yellow')->render(); }, 2000 );
     Input::setTimeout( function() use ($app) { $app->hide(); $app->nameField->setValue("slow typer"); }, 3000 );
 
 
