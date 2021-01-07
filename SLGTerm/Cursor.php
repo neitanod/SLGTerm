@@ -94,5 +94,11 @@ class Cursor {
 		} else {
             Terminal::err(Terminal::ESCAPE."?7l");
 		}
-	}
+    }
+
+    public static function showOnExit(){
+        register_shutdown_function(function() { Cursor::show(); });
+    }
+
+
 }

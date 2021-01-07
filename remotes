@@ -15,9 +15,11 @@ return main();
 
 
 function main() {
+
     // Save screen and restore at the end.
     $original_cursor_position = Cursor::getPosition();
     Terminal::saveContents();
+    Cursor::showOnExit();
 
     $remotes = load_remotes();
 
