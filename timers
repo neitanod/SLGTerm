@@ -21,10 +21,10 @@ function main() {
 
     $app = create_name_form();
 
-    Input::setInterval( function()  { Terminal::echoAt(60,2, date("Y-m-d H:i:s")); }, 200 );
+    Input::setInterval( function()  { Terminal::echoAt(60,3, date("Y-m-d H:i:s")); }, 200 );
     Input::setInterval( function() use ($app) { $app->spinner->advance(); }, 100 );
 
-    Input::setTimeout( function() { (new Label("Time's up.  Good bye!",60,6))->bgColor('red')->fgColor('yellow')->render(); }, 2000 );
+    Input::setTimeout( function() { (new Label("Time's up.  Good bye!",60,5))->bgColor('red')->fgColor('yellow')->render(); }, 2000 );
     Input::setTimeout( function() use ($app) { $app->hide(); $app->nameField->setValue("slow typer"); }, 3000 );
 
 

@@ -207,13 +207,9 @@ class Input {
     protected static function findNextTimer() {
         reset(static::$timers);
 
-
-        Terminal::echoAt(60,3, "Last Timer ID: ".static::$nextTimer);
-
         static::$nextTimer = null;
 
         foreach ( static::$timers as $id => $timer ) {
-        Terminal::echoAt(60,4, "Timer {$id} due: ".$timer['due']);
             if(
                 is_null(static::$nextTimer) ||
                 static::$timers[static::$nextTimer]['due'] > $timer['due']
@@ -221,8 +217,6 @@ class Input {
                 static::$nextTimer = $id;
             }
         }
-
-        Terminal::echoAt(60,5, "Next Timer ID: ".static::$nextTimer);
     }
 
     protected static function executeTimer() {
