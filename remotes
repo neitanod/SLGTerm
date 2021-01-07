@@ -174,7 +174,7 @@ function create_main_form($remotes) {
         $RemoveButton->on("pressed", function($event) use ($RemoveButton) {
             $spinner = new Spinner($RemoveButton->col()+14, $RemoveButton->row());
             $interval = Input::setInterval(function() use ($spinner) { $spinner->advance(); }, 200);
-            Input::setTimeout(function() use ($interval) { Input::clearTimer($interval); }, 1500);
+            Input::setTimeout(function() use ($interval) { Input::clearTimer($interval); }, 5000);
         });
 
         $app->addWidget($RemoveButton);
