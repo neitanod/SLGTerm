@@ -53,8 +53,8 @@ function create_name_form() {
 
     $app->on("key", function( $event ) {
         $key = $event->getData('key');
-        if($key == "<ESC>") {
-            $event->getData('controller')->exit = true;
+        if($key == "<ESC>" || $key == "<ENTER>") {
+            $event->getData('controller')->hide();
             // setting exit to true will break the loop on next iteration
         }
     });
