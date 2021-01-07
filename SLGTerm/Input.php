@@ -235,5 +235,11 @@ class Input {
         $callback();
     }
 
+    public static function clearTimer($id) {
+        if ( array_key_exists($id, static::$timers) ) {
+            unset(static::$timers[$id]);
+            static::findNextTimer();
+        }
+    }
 }
 

@@ -22,6 +22,20 @@ class Button {
         $this->init_observable();
     }
 
+    public function col() {
+        if ( $this->col == -1 ) {
+            $this->positionAtCursor();
+        }
+        return $this->col;
+    }
+
+    public function row() {
+        if ( $this->row == -1 ) {
+            $this->positionAtCursor();
+        }
+        return $this->row;
+    }
+
     public function focus() {
         $this->hasFocus = true;
         $this->render();
