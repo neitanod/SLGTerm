@@ -36,7 +36,7 @@ class ListItem {
     }
 
     public function setList(ListInput $list) {
-        $this->list = $list;
+        $this->parentList = $list;
     }
 
 }

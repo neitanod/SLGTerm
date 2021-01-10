@@ -123,7 +123,21 @@ function create_list() {
     $List->add( new ListItem("   Item 7   ", 70) );
     $List->add( new ListItem("   Item 8   ", 80) );
     $List->add( new ListItem("   Item 9   ", 90) );
-    $List->add( new ListItem("   Item 10  ", 100) );
+    $List->add( new ListItem("   Item 10   ", 100) );
+
+    // Add J and K as navigation keys (default are
+    // only <UP> and <DOWN>
+
+    $List->setKeys(
+        [
+            "<UP>",
+            "k",
+        ],
+        [
+            "<DOWN>",
+            "j",
+        ]
+    );
 
     return $List;
 }

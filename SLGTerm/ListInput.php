@@ -46,10 +46,16 @@ class ListInput {
         $this->init_observable();
     }
 
-    public function setKeys(array $upArray, array $downArray, array $selectArray) {
-        $this->upKeys = $upArray;
-        $this->downKeys = $downArray;
-        $this->selectKeys = $selectArray;
+    public function setKeys(array $upArray = null, array $downArray = null, array $selectArray = null) {
+        if (! is_null($upArray) ) {
+            $this->upKeys = $upArray;
+        }
+        if (! is_null($downArray) ) {
+            $this->downKeys = $downArray;
+        }
+        if (! is_null($selectArray) ) {
+            $this->selectKeys = $selectArray;
+        }
     }
 
     public function handleInput( $event ) {
@@ -123,10 +129,6 @@ class ListInput {
             $this->height = self::DEFAULT_HEIGHT;
         }
 
-        if ( is_null($this->width) ) {
-            $this->width = self::DEFAULT_WIDTH;
-        }
-
         $this->setColors();
 
         for ( $i = 0; $i < $this->height; $i++) {
@@ -166,6 +168,10 @@ class ListInput {
     }
 
     public function getWidth() {
+        if ( is_null($this->width) ) {
+            $this->width = self::DEFAULT_WIDTH;
+        }
+
         return $this->width;
     }
 
