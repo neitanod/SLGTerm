@@ -175,4 +175,7 @@ class ListInput {
         return $this->width;
     }
 
+    public function setCycle(bool $cycle) {
+        $this->cycle = $cycle;
+    }
 }

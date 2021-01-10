@@ -79,7 +79,7 @@ function create_main_form() {
     $app->addWidget($Title);
     $app->addWidget($StatusBar);
 
-    $List = create_list();
+    $List = create_list(2, 4);
 
     $List->on("input", function( $event ) use ($StatusBar, $List) {
         $key = $event->getData('key');
@@ -88,6 +88,18 @@ function create_main_form() {
     });
 
     $app->addWidget($List);
+
+    $List2 = create_list(30, 4);
+
+    $List2->on("input", function( $event ) use ($StatusBar, $List2) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("w: ".$List2->getWidth()." key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->addWidget($List2);
+
+    $List2->setCycle(false);
 
     return $app;
 
@@ -110,20 +122,20 @@ function set_info_colors($widget) {
 }
 
 
-function create_list() {
+function create_list($col, $row) {
 
-    $List = new ListInput(2, 4, null, 8);
+    $List = new ListInput($col, $row, null, 8);
 
-    $List->add( new ListItem("   Item 1   ", 10) );
-    $List->add( new ListItem("   Item 2   ", 20) );
-    $List->add( new ListItem("   Item 3   ", 30) );
-    $List->add( new ListItem("   Item 4   ", 40) );
-    $List->add( new ListItem("   Item 5   ", 50) );
-    $List->add( new ListItem("   Item 6   ", 60) );
-    $List->add( new ListItem("   Item 7   ", 70) );
-    $List->add( new ListItem("   Item 8   ", 80) );
-    $List->add( new ListItem("   Item 9   ", 90) );
-    $List->add( new ListItem("   Item 10   ", 100) );
+    $List->add( new ListItem("  Item 1   ", 10) );
+    $List->add( new ListItem("  Item 2   ", 20) );
+    $List->add( new ListItem("  Item 3   ", 30) );
+    $List->add( new ListItem("  Item 4   ", 40) );
+    $List->add( new ListItem("  Item 5   ", 50) );
+    $List->add( new ListItem("  Item 6   ", 60) );
+    $List->add( new ListItem("  Item 7   ", 70) );
+    $List->add( new ListItem("  Item 8   ", 80) );
+    $List->add( new ListItem("  Item 9   ", 90) );
+    $List->add( new ListItem("  Item 10   ", 100) );
 
     // Add J and K as navigation keys (default are
     // only <UP> and <DOWN>
