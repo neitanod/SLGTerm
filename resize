@@ -30,10 +30,19 @@ function main() {
     });
 
     Input::setInterval(function () use ($app) {
+        // Intervals and Timeouts only work while a Form object ($app for
+        // example) has the focus.
+
+        // Keep track of terminal dimensions
         static $cols;
-        if (is_null($cols)) $cols = Terminal::cols();
+        if (is_null($cols)) {
+            $cols = Terminal::cols();
+        }
+
         static $rows;
-        if (is_null($rows)) $rows = Terminal::rows();
+        if (is_null($rows)) {
+            $rows = Terminal::rows();
+        }
 
         if( $cols != Terminal::cols() || $rows != Terminal::rows()) {
 
@@ -45,6 +54,8 @@ function main() {
             $data = ["oldDimensions"=>$oldDimensions, "newDimensions"=>$newDimensions];
 
             echo "Resized! ".json_encode($data)."\n";
+
+            // Can easily integrate with objects if we make them emit an event
             $app->emit("resized", $data);
 
         }
