@@ -28,16 +28,19 @@ class ListInput {
 
     protected $cycle = false;
 
+    protected $offset = 0;
+
     protected $col = -1;
     protected $row = -1;
     protected $height = -1;
     protected $width = -1;
 
-    public function __construct(int $col = -1, int $row = -1) {
+    public function __construct(int $col = -1, int $row = -1, int $width = -1, int $height = -1) {
         $this->col = $col;
         $this->row = $row;
+        $this->width = $width;
+        $this->height = $height;
         $this->init_observable();
-        $this->width = -1;
     }
 
     public function setKeys(array $upArray, array $downArray, array $selectArray) {
@@ -77,6 +80,9 @@ class ListInput {
                 $this->focusedIndex = 0;
             }
         }
+        if($this->offset > $this->focusedIndex) {
+            $this->offset = min(count($this->items), $this->offset-1);
+        }
     }
 
     public function moveDown() {
@@ -89,6 +95,9 @@ class ListInput {
                 $this->focusedIndex = key($this->items);
             }
         }
+        if( ($this->offset + $this->height) < $this->focusedIndex) {
+            $this->offset = max(0, $this->focusedIndex-$this->height);
+        }
     }
 
     public function select() {
@@ -97,6 +106,7 @@ class ListInput {
 
     public function add(ListItem $item) {
         $this->items[] = $item;
+        $item->setList($this);
     }
 
     public function render() {
@@ -116,11 +126,11 @@ class ListInput {
 
         for ( $i = 0; $i <= $this->height; $i++) {
             Cursor::move( $this->col, $this->row+$i );
-            if ( isset($this->items[$i]) ) {
-                if ( $i == $this->focusedIndex ) {
+            if ( isset($this->items[$i+$this->offset]) ) {
+                if ( ($i + $this->offset ) == $this->focusedIndex ) {
                     Terminal::underline();
                 }
-                $this->items[$i]->render();
+                $this->items[$i + $this->offset]->render();
                 Terminal::normal();
 
             }
@@ -151,129 +161,3 @@ class ListInput {
     }
 
 }
-
-/*
-    protected $col;
-    protected $row;
-    protected $width = 0;
-    protected $echo = true;
-    protected $localBuffer = [];
-    protected $str = null;
-
-    protected $posInField = 0;
-    protected $posInValue = 0;
-    protected $offset = 0;
-
-    protected $hasFocus = false;
-
-    public function __construct(int $col = -1, int $row = -1) {
-        $this->col = $col;
-        $this->row = $row;
-        $this->init_observable();
-        $this->width = -1;
-        //Terminal::cols() - $this->col;
-        $this->str = new EditableString();
-    }
-
-    public function setValue(string $value) {
-        $this->str->setValue($value);
-    }
-
-    public function width($width) {
-        $this->width = $width;
-        return $this;
-    }
-
-    public function readFromBuffer() {
-        if ( !empty($this->localBuffer) ) {
-            return array_shift($this->localBuffer);
-        } else {
-            return Terminal::read();
-        }
-    }
-
-    public function focus() {
-        $this->hasFocus = true;
-        Cursor::show();
-        $result = $this->emit("focus", ["bus"=>$this->bus, "target"=>$this]);
-    }
-
-    public function blur() {
-        $this->hasFocus = false;
-        $this->render();
-        $result = $this->emit("blur", ["bus"=>$this->bus, "target"=>$this]);
-    }
-
-    protected function advanceCursor() {
-
-        if($this->str->advanceCursor()) {
-            if($this->posInField >= $this->width) { // if pushing right
-                $this->offset++;
-            } else {
-                $this->posInField++;
-            }
-        }
-
-    }
-
-    protected function retrocedeCursor() {
-
-        if($this->str->retrocedeCursor()) {
-            if($this->posInField <= 0) { // if pushing left
-                $this->offset--;
-            } else {
-                $this->posInField--;
-            }
-        }
-
-    }
-
-    protected function calculateVisible() {
-        return str_pad(substr(substr($this->str->getValue(), $this->offset), 0, $this->width), $this->width);
-    }
-
-    public function handleInput( $event ) {
-
-        $this->render();
-        $key = $event->getData("key");
-
-        if ($key == "<DOWN>") {
-            $this->retrocedeCursor();
-            $this->render();
-        } elseif ($key == "<ENTER>") {
-            // Ignore
-        } elseif ($key == "<RIGHT>") {
-            $this->advanceCursor();
-            $this->render();
-        } elseif($key === '<BACKSPACE>'){
-            $this->str->remove(-1);
-            $this->retrocedeCursor();
-            $this->render();
-        } elseif($key === '<DELETE>'){
-            $this->str->remove(1);
-            $this->render();
-        } elseif($key === '<TAB>'){
-            // should pass focus to next input element
-        } else {
-            if (mb_strlen($key) == 1) {
-
-                $this->str->insert($key);
-
-                $this->advanceCursor();
-
-                if ($this->echo) {
-                    $this->render();
-                }
-            }
-        }
-
-        $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "target"=>$this]);
-    }
-
-    public function getValue() {
-        return $this->str->getValue();
-    }
-
-}
-
- */

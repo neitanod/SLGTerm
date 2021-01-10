@@ -112,11 +112,18 @@ function set_info_colors($widget) {
 
 function create_list() {
 
-    $List = new ListInput(5, 4);
+    $List = new ListInput(5, 4, 20, 2);
 
-    $List->add( new ListItem("Item 1", 10) );
-    $List->add( new ListItem("Item 2", 20) );
-    $List->add( new ListItem("Item 3", 30) );
+    $List->add( new ListItem("   Item 1   ", 10) );
+    $List->add( new ListItem("   Item 2   ", 20) );
+    $List->add( new ListItem("   Item 3   ", 30) );
+    $List->add( new ListItem("   Item 4   ", 40) );
+    $List->add( new ListItem("   Item 5   ", 50) );
+    $List->add( new ListItem("   Item 6   ", 60) );
+    $List->add( new ListItem("   Item 7   ", 70) );
+    $List->add( new ListItem("   Item 8   ", 80) );
+    $List->add( new ListItem("   Item 9   ", 90) );
+    $List->add( new ListItem("   Item 10  ", 100) );
 
     return $List;
 }
