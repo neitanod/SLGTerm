@@ -81,9 +81,9 @@ function create_main_form() {
 
     $List = create_list();
 
-    $List->on("input", function( $event ) use ($StatusBar) {
+    $List->on("input", function( $event ) use ($StatusBar, $List) {
         $key = $event->getData('key');
-        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+        $StatusBar->setValue("w: ".$List->getWidth()." key: ".$key." ".json_encode($event->getData()))
             ->render();
     });
 
@@ -112,7 +112,7 @@ function set_info_colors($widget) {
 
 function create_list() {
 
-    $List = new ListInput(5, 4, 20, 2);
+    $List = new ListInput(2, 4, null, 8);
 
     $List->add( new ListItem("   Item 1   ", 10) );
     $List->add( new ListItem("   Item 2   ", 20) );

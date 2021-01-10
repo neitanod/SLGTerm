@@ -26,16 +26,19 @@ class ListInput {
 
     protected $focusedIndex = 0;
 
-    protected $cycle = false;
+    protected $cycle = true;
 
     protected $offset = 0;
 
-    protected $col = -1;
-    protected $row = -1;
-    protected $height = -1;
-    protected $width = -1;
+    protected $col = null;
+    protected $row = null;
+    protected $height = null;
+    protected $width = null;
 
-    public function __construct(int $col = -1, int $row = -1, int $width = -1, int $height = -1) {
+    const DEFAULT_WIDTH = 25;
+    const DEFAULT_HEIGHT = 5;
+
+    public function __construct(int $col = null, int $row = null, int $width = null, int $height = null) {
         $this->col = $col;
         $this->row = $row;
         $this->width = $width;
@@ -76,6 +79,7 @@ class ListInput {
             if($this->cycle) {
                 end($this->items); // move pointer to end to find out key
                 $this->focusedIndex = key($this->items);
+                $this->offset = max(0, count($this->items)-($this->height));
             } else {
                 $this->focusedIndex = 0;
             }
@@ -91,12 +95,13 @@ class ListInput {
         if($this->focusedIndex > key($this->items)) {
             if($this->cycle) {
                 $this->focusedIndex = 0;
+                $this->offset = 0;
             } else {
                 $this->focusedIndex = key($this->items);
             }
         }
-        if( ($this->offset + $this->height) < $this->focusedIndex) {
-            $this->offset = max(0, $this->focusedIndex-$this->height);
+        if( ($this->offset + ($this->height - 1) ) < $this->focusedIndex) {
+            $this->offset = max(0, $this->focusedIndex-($this->height-1) );
         }
     }
 
@@ -110,21 +115,21 @@ class ListInput {
     }
 
     public function render() {
-        if ( $this->col == -1 ) {
+        if ( is_null($this->col) ) {
             $this->positionAtCursor();
         }
 
-        if ( $this->height == -1 ) {
-            $this->height = 10;
+        if ( is_null($this->height) ) {
+            $this->height = self::DEFAULT_HEIGHT;
         }
 
-        if ( $this->width == -1 ) {
-            $this->width = 25;
+        if ( is_null($this->width) ) {
+            $this->width = self::DEFAULT_WIDTH;
         }
 
         $this->setColors();
 
-        for ( $i = 0; $i <= $this->height; $i++) {
+        for ( $i = 0; $i < $this->height; $i++) {
             Cursor::move( $this->col, $this->row+$i );
             if ( isset($this->items[$i+$this->offset]) ) {
                 if ( ($i + $this->offset ) == $this->focusedIndex ) {
@@ -158,6 +163,10 @@ class ListInput {
         $this->col = $current_position["col"];
         $this->row = $current_position["row"];
         return $this;
+    }
+
+    public function getWidth() {
+        return $this->width;
     }
 
 }
