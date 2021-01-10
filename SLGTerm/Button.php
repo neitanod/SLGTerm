@@ -40,21 +40,21 @@ class Button {
         $this->hasFocus = true;
         $this->render();
         Cursor::hide();
-        $result = $this->emit("focus", ["bus"=>$this->bus, "currentTarget"=>$this]);
+        $result = $this->emit("focus", ["bus"=>$this->bus, "target"=>$this]);
     }
 
     public function blur() {
         $this->hasFocus = false;
         $this->render();
         Cursor::show();
-        $result = $this->emit("blur", ["bus"=>$this->bus, "currentTarget"=>$this]);
+        $result = $this->emit("blur", ["bus"=>$this->bus, "target"=>$this]);
     }
 
     public function handleInput( Event $event ) {
         if ( $event->getData("key") == " " || $event->getData("key") == "<ENTER>" ) {
             $this->emit( "pressed", [
                 "key"=>$event->getData("key"),
-                "currentTarget"=>$this,
+                "target"=>$this,
                 "parentEvent"=>$event
             ]);
         }

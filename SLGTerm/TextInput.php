@@ -53,13 +53,13 @@ class TextInput {
     public function focus() {
         $this->hasFocus = true;
         Cursor::show();
-        $result = $this->emit("focus", ["bus"=>$this->bus, "currentTarget"=>$this]);
+        $result = $this->emit("focus", ["bus"=>$this->bus, "target"=>$this]);
     }
 
     public function blur() {
         $this->hasFocus = false;
         $this->render();
-        $result = $this->emit("blur", ["bus"=>$this->bus, "currentTarget"=>$this]);
+        $result = $this->emit("blur", ["bus"=>$this->bus, "target"=>$this]);
     }
 
     protected function advanceCursor() {
@@ -151,7 +151,7 @@ class TextInput {
             }
         }
 
-        $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "currentTarget"=>$this]);
+        $result = $this->emit("input", ["value"=>$this->str->getValue(), "bus"=>$this->bus, "target"=>$this]);
     }
 
     public function positionAtCursor() {

@@ -1,0 +1,125 @@
+#!/usr/bin/env php
+<?php
+require(__DIR__."/SLGTerm/autoload.php");
+
+use SLGTerm\Form;
+use SLGTerm\Box;
+use SLGTerm\Terminal;
+use SLGTerm\Cursor;
+use SLGTerm\Label;
+use SLGTerm\ListInput;
+use SLGTerm\ListItem;
+
+return main();
+
+
+function main() {
+
+    // Save screen and restore at the end.
+    $original_cursor_position = Cursor::getPosition();
+    Terminal::saveContents();
+    Cursor::showOnExit();
+
+    $app = create_main_form();
+
+    $app->show();
+    $app->focus();
+
+    Terminal::restoreContents();
+    Cursor::setPosition($original_cursor_position);
+
+    // This demo does nothing
+    // but we can compare data with original and
+    // run git to rename remotes or change the urls.
+
+        Terminal::fgColor("black");
+        Terminal::bgColor("green");
+        echo "Good bye!\n";
+
+    return 0;
+}
+
+function create_main_form() {
+
+    $app = new Form();
+
+    $Box = new Box(); // Fullscreen by default
+    set_default_colors($Box);
+
+    $app->addWidget($Box); // Use as form background, useful for clean redraws
+
+    $Title = (new Label(" Try the lists using J, K, Up, Down, Tab, Backspace, Space, Enter and Esc.", 3, 2));
+    set_default_colors($Title);
+
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()));
+    set_info_colors($StatusBar);
+
+    $app->on("key", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<ESC>") {
+            $event->getData('controller')->hide();
+        }
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<TAB>") {
+            $event->getData('controller')->focusNext();
+        } elseif($key == "<HOME>") {
+            $event->getData('controller')->focusPrevious();
+        }
+    });
+
+    $app->addWidget($Title);
+    $app->addWidget($StatusBar);
+
+    $List = create_list();
+
+    $List->on("input", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->addWidget($List);
+
+    return $app;
+
+}
+
+
+function set_default_colors($widget) {
+    $widget->fgColor256(250)
+        ->bgColor256(235)
+        ->fgColor("white")
+        ->bgColor("black");
+}
+
+
+function set_info_colors($widget) {
+    $widget->fgColor256(255)
+        ->bgColor256(27)
+        ->fgColor("white")
+        ->bgColor("blue");
+}
+
+
+function create_list() {
+
+    $List = new ListInput(5, 4);
+
+    $List->add( new ListItem("Item 1", 10) );
+    $List->add( new ListItem("Item 2", 20) );
+    $List->add( new ListItem("Item 3", 30) );
+
+    return $List;
+}
+
+
+

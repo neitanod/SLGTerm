@@ -6,7 +6,6 @@ require_once(__DIR__."/TraitObservable.php");
 class Form {
 
     use Observable;
-    // use Timeable;
 
     protected $widgets = [];
     protected $focused_widget = null;
