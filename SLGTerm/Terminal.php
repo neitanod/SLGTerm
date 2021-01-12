@@ -137,7 +137,7 @@ class Terminal {
         static::err(chr(007));
     }
 
-    public function clearLine($line) {
+    public static function clearLine($line) {
         if ( is_null($line) ) {
             Terminal::echo(Terminal::ESCAPE."2K");
         } else {
@@ -148,28 +148,51 @@ class Terminal {
         }
     }
 
-    public function clearLineStart() {
+    public static function clearLineStart() {
         Terminal::echo(Terminal::ESCAPE."1K");
     }
 
-    public function clearLineEnd() {
+    public static function clearLineEnd() {
         Terminal::echo(Terminal::ESCAPE."K");
     }
 
-    public function clearUp() {
+    public static function clearUp() {
         Terminal::echo(Terminal::ESCAPE."1J");
     }
 
-    public function clearDown() {
+    public static function clearDown() {
         Terminal::echo(Terminal::ESCAPE."J");
     }
 
-    public function saveContents() {
+    public static function saveContents() {
         return passthru('tput smcup');
     }
 
-    public function restoreContents() {
+    public static function restoreContents() {
         return passthru('tput rmcup');
+    }
+
+    public static function applyStyle($style) {
+
+        Terminal::normal();
+
+        Terminal::fgColor($style->getFgColorFor(Terminal::colors()));
+        Terminal::bgColor($style->getBgColorFor(Terminal::colors()));
+
+        if ( $style->get('bold') ) {
+            Terminal::bold();
+        } elseif ( $style->get('dim') ) {
+            Terminal::dim();
+        }
+        if ( $style->get('underline') ) {
+            Terminal::underline();
+        }
+
+
+    }
+
+    public static function resetStyle() {
+        Terminal::normal();
     }
 
 }

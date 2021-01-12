@@ -2,17 +2,18 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
-require_once(__DIR__."/TraitColoreable.php");
 
 class Button {
 
     use Observable;
-    use Coloreable;
 
     protected $col;
     protected $row;
     protected $value = "";
     protected $hasFocus = false;
+
+    protected $style = null;
+    protected $styleFocused = null;
 
     public function __construct(string $value = "", int $col = -1, int $row = -1, int $width = -1) {
         $this->value = $value;
@@ -68,15 +69,7 @@ class Button {
             Cursor::move($this->col, $this->row);
         }
 
-        if ( $this->hasFocus ) {
-            $this->underline = true;
-            $this->weight = "bold";
-        } else {
-            $this->underline = false;
-            $this->weight = "normal";
-        }
-
-        $this->setColors();
+        Terminal::applyStyle($this->currentStyle());
 
         $width = $this->width;
 
@@ -86,7 +79,7 @@ class Button {
 
         Terminal::echo(str_pad(mb_substr($this->value, 0, $width), $width));
 
-        $this->resetColors();
+        Terminal::resetStyle();
 
         return $this;
     }
@@ -101,6 +94,27 @@ class Button {
     public function setValue($value) {
         $this->value = (string)$value;
         return $this;
+    }
+
+    public function style(Style $style) {
+        $this->style = $style;
+        return $this;
+    }
+
+    public function styleFocused(Style $style) {
+        $this->styleFocused = $style;
+        return $this;
+    }
+
+    protected function currentStyle() {
+        if (
+            !$this->hasFocus ||
+            is_null($this->styleFocused)
+        ) {
+            return $this->style;
+        } else {
+            return $this->styleFocused;
+        }
     }
 }
 

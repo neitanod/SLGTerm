@@ -2,12 +2,10 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
-require_once(__DIR__."/TraitColoreable.php");
 
 class ListInput {
 
     use Observable;
-    use Coloreable;
 
     protected $upKeys = [
         "<UP>",
@@ -35,6 +33,11 @@ class ListInput {
     protected $height = null;
     protected $width = null;
 
+    protected $style = null;
+    protected $styleFocused = null;
+    protected $styleSelectedItem = null;
+    protected $styleSelectedItemFocused = null;
+
     const DEFAULT_WIDTH = 25;
     const DEFAULT_HEIGHT = 5;
 
@@ -44,6 +47,16 @@ class ListInput {
         $this->width = $width;
         $this->height = $height;
         $this->init_observable();
+
+    
+        // Default styles:
+        $this->style = new Style('white', 'black', 250, 235);
+
+        // Widget style when focused
+        $this->styleFocused = (new Style('white', 'black', 250, 235))->bold();
+
+        // Selected element in list
+        $this->styleSelectedItem = new Style('black', 'white', 235, 250);
     }
 
     public function setKeys(array $upArray = null, array $downArray = null, array $selectArray = null) {
@@ -129,21 +142,21 @@ class ListInput {
             $this->height = self::DEFAULT_HEIGHT;
         }
 
-        $this->setColors();
 
         for ( $i = 0; $i < $this->height; $i++) {
             Cursor::move( $this->col, $this->row+$i );
             if ( isset($this->items[$i+$this->offset]) ) {
                 if ( ($i + $this->offset ) == $this->focusedIndex ) {
-                    Terminal::underline();
+                      Terminal::applyStyle($this->currentStyleSelectedItem());
+                } else {
+                    Terminal::applyStyle($this->currentStyle());
                 }
-                $this->items[$i + $this->offset]->render();
-                Terminal::normal();
 
+                $this->items[$i + $this->offset]->render();
             }
         }
 
-        $this->resetColors();
+        Terminal::resetStyle();
         return $this;
     }
 
@@ -177,5 +190,47 @@ class ListInput {
 
     public function setCycle(bool $cycle) {
         $this->cycle = $cycle;
+    }
+
+    public function style(Style $style) {
+        $this->style = $style;
+        return $this;
+    }
+
+    public function styleFocused(Style $style) {
+        $this->styleFocused = $style;
+        return $this;
+    }
+
+    public function styleSelectedItem(Style $style) {
+        $this->styleSelectedItem = $style;
+        return $this;
+    }
+
+    public function styleSelectedItemFocused(Style $style) {
+        $this->styleSelectedItemFocused = $style;
+        return $this;
+    }
+
+    protected function currentStyle() {
+        if (
+            !$this->hasFocus ||
+            is_null($this->styleFocused)
+        ) {
+            return $this->style;
+        } else {
+            return $this->styleFocused;
+        }
+    }
+
+    protected function currentStyleSelectedItem() {
+        if (
+            !$this->hasFocus ||
+            is_null($this->styleSelectedItemFocused)
+        ) {
+            return $this->styleSelectedItem;
+        } else {
+            return $this->styleSelectedItemFocused;
+        }
     }
 }

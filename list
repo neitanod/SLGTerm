@@ -9,6 +9,7 @@ use SLGTerm\Cursor;
 use SLGTerm\Label;
 use SLGTerm\ListInput;
 use SLGTerm\ListItem;
+use SLGTerm\Style;
 
 return main();
 
@@ -81,6 +82,8 @@ function create_main_form() {
 
     $List = create_list(2, 4);
 
+    set_list_colors($List);
+
     $List->on("input", function( $event ) use ($StatusBar, $List) {
         $key = $event->getData('key');
         $StatusBar->setValue("w: ".$List->getWidth()." key: ".$key." ".json_encode($event->getData()))
@@ -90,6 +93,8 @@ function create_main_form() {
     $app->addWidget($List);
 
     $List2 = create_list(30, 4);
+
+    set_list_colors($List2);
 
     $List2->on("input", function( $event ) use ($StatusBar, $List2) {
         $key = $event->getData('key');
@@ -105,20 +110,33 @@ function create_main_form() {
 
 }
 
-
 function set_default_colors($widget) {
-    $widget->fgColor256(250)
-        ->bgColor256(235)
-        ->fgColor("white")
-        ->bgColor("black");
+    $style = new Style('white', 'black', 250, 235);
+    $widget->style($style);
 }
 
+function set_list_colors($widget) {
+    // Widget style when not focused
+    $style = new Style('white', 'black', 250, 236);
+
+    // Widget style when focused
+    $styleFocused = (new Style('yellow', 'black', 253, 241))->bold()->underline();
+
+    // Selected element in list when not focused
+    $styleSelectedItem = new Style('black', 'white', 235, 250);
+
+    // Selected element in list when focused
+    $styleSelectedItemFocused = new Style('black', 'white', 235, 253);
+
+    $widget->style($style);
+    $widget->styleFocused($styleFocused);
+    $widget->styleSelectedItem($styleSelectedItem);
+    $widget->styleSelectedItemFocused($styleSelectedItemFocused);
+}
 
 function set_info_colors($widget) {
-    $widget->fgColor256(255)
-        ->bgColor256(27)
-        ->fgColor("white")
-        ->bgColor("blue");
+    $style = new Style('white', 'blue', 255, 27);
+    $widget->style($style);
 }
 
 

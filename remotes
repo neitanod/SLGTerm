@@ -12,6 +12,7 @@ use SLGTerm\TextInput;
 use SLGTerm\Label;
 use SLGTerm\Button;
 use SLGTerm\Spinner;
+use SLGTerm\Style;
 
 return main();
 
@@ -68,30 +69,21 @@ function load_remotes() {
 }
 
 function set_default_colors($widget) {
-    $widget->fgColor256(250)
-        ->bgColor256(235)
-        ->fgColor("white")
-        ->bgColor("black");
+    $widget->style( new Style("white", "black", 250, 235) );
 }
 
 function set_info_colors($widget) {
-    $widget->fgColor256(255)
-        ->bgColor256(27)
-        ->fgColor("white")
-        ->bgColor("blue");
+    $widget->style( new Style("white", "blue", 250, 27) );
 }
 
 function set_success_colors($widget) {
-    $widget->fgColor256(255)
-        ->bgColor256(64)
-        ->fgColor("white")
-        ->bgColor("green");
+    $widget->style( new Style("white", "green", 250, 64) );
+    $widget->styleFocused( ( new Style("white", "green", 255, 34) )->underline()->bold() );
 }
 
 function set_danger_colors($widget) {
-    $widget->fgColor256(255)
-        ->fgColor("white")
-        ->bgColor("red");
+    $widget->style( new Style("white", "red", 255) );
+    $widget->styleFocused( ( new Style("white", "red", 255, 160) )->underline()->bold() );
 }
 
 function create_main_form($remotes) {
@@ -137,11 +129,11 @@ function create_main_form($remotes) {
 
     foreach ($remotes as $remote) {
 
-        $row++;
-        $row++;
+        $row = $row + 2;
 
         $NextControl = (new TextInput( 10, $row))
-            ->bgColor("cyan")
+            ->style(new Style(null, "cyan"))
+            ->styleFocused((new Style(null, "cyan"))->underline()->bold())
             ->width(10);
 
         $NextControl->setValue($remote['name']);
@@ -155,7 +147,8 @@ function create_main_form($remotes) {
         $app->addWidget($NextControl);
 
         $NextControl = (new TextInput( 26, $row))
-            ->bgColor("cyan")
+            ->style(new Style(null, "cyan"))
+            ->styleFocused((new Style(null, "cyan"))->underline()->bold())
             ->width(40);
 
         $NextControl->setValue($remote['url']);

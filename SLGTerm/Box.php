@@ -1,11 +1,7 @@
 <?php
 namespace SLGTerm;
 
-require_once("TraitColoreable.php");
-
 class Box {
-
-    use Coloreable;
 
     protected $set = [
         'none' => [
@@ -75,7 +71,7 @@ class Box {
 
         Cursor::move($this->col, $this->row);
 
-        $this->setColors();
+        Terminal::applyStyle($this->style);
 
         Terminal::echo($this->border(0,0).str_repeat($this->border(0,1), $this->width-2). $this->border(0,3));
 
@@ -86,18 +82,23 @@ class Box {
             ) {
 
             Cursor::move($this->col, $row);
-            $this->setColors();
+            Terminal::applyStyle($this->style);
             Terminal::echo($this->border(1,0).str_repeat($this->border(1,1), $this->width-2).$this->border(1,3));
 
         }
 
             Cursor::move($this->col, $this->row+$this->height);
-            $this->setColors();
+            Terminal::applyStyle($this->style);
             Terminal::echo($this->border(3,0).str_repeat($this->border(3,1), $this->width-2).$this->border(3,3));
 
     }
 
     protected function border($row, $col) {
         return ($this->set[$this->useSet][$row])[$col];
+    }
+
+    public function style(Style $style) {
+        $this->style = $style;
+        return $this;
     }
 }

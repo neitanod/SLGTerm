@@ -2,12 +2,10 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
-require_once(__DIR__."/TraitColoreable.php");
 
 class Label {
 
     use Observable;
-    use Coloreable;
 
     protected $col;
     protected $row;
@@ -29,7 +27,7 @@ class Label {
             Cursor::move($this->col, $this->row);
         }
 
-        $this->setColors();
+        Terminal::applyStyle($this->style);
 
         $width = $this->width;
 
@@ -39,7 +37,7 @@ class Label {
 
         Terminal::echo(str_pad(mb_substr($this->value, 0, $width), $width));
 
-        $this->resetColors();
+        Terminal::resetStyle();
 
         return $this;
     }
@@ -53,6 +51,11 @@ class Label {
 
     public function setValue($value) {
         $this->value = (string)$value;
+        return $this;
+    }
+
+    public function style(Style $style) {
+        $this->style = $style;
         return $this;
     }
 }

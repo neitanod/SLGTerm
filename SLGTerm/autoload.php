@@ -13,3 +13,4 @@ require(__DIR__."/ListItem.php");
 require(__DIR__."/Label.php");
 require(__DIR__."/Button.php");
 require(__DIR__."/Spinner.php");
+require(__DIR__."/Style.php");

@@ -2,14 +2,11 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
-require_once(__DIR__."/TraitColoreable.php");
 require_once(__DIR__."/EditableString.php");
 
 class TextInput {
 
     use Observable;
-    use Coloreable;
-    // use Timeable;
 
     protected $col;
     protected $row;
@@ -23,6 +20,9 @@ class TextInput {
     protected $offset = 0;
 
     protected $hasFocus = false;
+
+    protected $style = null;
+    protected $styleFocused = null;
 
     public function __construct(int $col = -1, int $row = -1) {
         $this->col = $col;
@@ -107,12 +107,12 @@ class TextInput {
             $this->underline = false;
         }
 
-        $this->setColors();
+        Terminal::applyStyle($this->currentStyle());
 
         Terminal::echo($this->calculateVisible());
 
         Cursor::move($this->col + $this->posInField, $this->row);
-        $this->resetColors();
+        Terminal::resetStyle();
         return $this;
     }
 
@@ -165,4 +165,24 @@ class TextInput {
         return $this->str->getValue();
     }
 
+    public function style(Style $style) {
+        $this->style = $style;
+        return $this;
+    }
+
+    public function styleFocused(Style $style) {
+        $this->styleFocused = $style;
+        return $this;
+    }
+
+    protected function currentStyle() {
+        if (
+            !$this->hasFocus ||
+            is_null($this->styleFocused)
+        ) {
+            return $this->style;
+        } else {
+            return $this->styleFocused;
+        }
+    }
 }

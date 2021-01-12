@@ -9,6 +9,7 @@ use SLGTerm\Cursor;
 use SLGTerm\TextInput;
 use SLGTerm\Label;
 use SLGTerm\Spinner;
+use SLGTerm\Style;
 
 return main();
 
@@ -38,12 +39,10 @@ function create_name_form() {
     $app = new Form();
 
     $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
-        ->bgColor("green")
-        ->fgColor("black");
+        ->style(new Style('black', 'green'));
 
     $StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
-        ->bgColor("white")
-        ->fgColor("green");
+        ->style(new Style('green', 'white'));
 
     $app->on("key", function( $event ) use ($StatusBar) {
         $key = $event->getData('key');
@@ -60,11 +59,10 @@ function create_name_form() {
     });
 
     $Label1 = (new Label(" Enter your name: ", 3, 3))
-        ->bgColor("green")
-        ->fgColor("black");
+        ->style(new Style('black', 'green'));
 
     $TextInput1 = (new TextInput( 22, 3))
-        ->bgColor("cyan");
+        ->style(new Style('white', 'cyan'));
         //->width(25);
 
     $TextInput1->on("input", function( $event ) use ($StatusBar2, $TextInput1) {
@@ -112,9 +110,9 @@ exit;
 //     ->render();
 
 $Label = (new Label(" Enter your name: ", 3, 3))
-    ->bgColor("green")
-    ->fgColor("black")
-    ->render();
+    ->style(
+        new Style("green")
+    );
 
 echo(" ");
 

@@ -10,6 +10,7 @@ use SLGTerm\Input;
 use SLGTerm\TextInput;
 use SLGTerm\Label;
 use SLGTerm\Spinner;
+use SLGTerm\Style;
 
 return main();
 
@@ -24,7 +25,7 @@ function main() {
     Input::setInterval( function()  { Terminal::echoAt(60,3, date("Y-m-d H:i:s")); }, 200 );
     Input::setInterval( function() use ($app) { $app->spinner->advance(); }, 100 );
 
-    Input::setTimeout( function() { (new Label("Hurry up!",60,5))->bgColor('red')->fgColor('yellow')->render(); }, 2000 );
+    Input::setTimeout( function() { (new Label("Hurry up!",60,5))->style(new Style('yellow', 'red'))->render(); }, 2000 );
     Input::setTimeout( function() use ($app) { $app->hide(); $app->nameField->setValue("slow typer"); }, 3000 );
 
 
@@ -56,11 +57,10 @@ function create_name_form() {
     });
 
     $Label1 = (new Label(" You have 3 seconds to type your name: ", 3, 3))
-        ->bgColor("green")
-        ->fgColor("black");
+        ->style(new Style("black", "green"));
 
     $TextInput1 = (new TextInput( 3, 5))
-        ->bgColor("cyan");
+        ->style(new Style("white", "cyan"));
         //->width(25);
 
     $app->addWidget($TextInput1);
@@ -80,12 +80,10 @@ function create_name_form() {
 function add_status_bars($app) {
 
     $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()))
-        ->bgColor("green")
-        ->fgColor("black");
+        ->style(new Style("black", "green"));
 
     $StatusBar2 = (new Label("", 0, Terminal::rows()-1, Terminal::cols(), Terminal::cols()))
-        ->bgColor("white")
-        ->fgColor("green");
+        ->style(new Style("green", "white"));
 
     $app->on("key", function( $event ) use ($StatusBar) {
         $key = $event->getData('key');
@@ -100,149 +98,3 @@ function add_status_bars($app) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-exit;
-
-// Terminal::clear();
-// Terminal::home();
-
-// Terminal::bell();
-
-
-/* */
-//Terminal::echoAt(9, 20, "Your name: ");
-//$TextInput1 = (new TextInput(20, 20));
-
-//echo("Enter your name: ");
-
-// $Box = (new Box())
-//     ->render();
-
-$Label = (new Label(" Enter your name: ", 3, 3))
-    ->bgColor("green")
-    ->fgColor("black")
-    ->render();
-
-echo(" ");
-
-$TextInput1 = (new TextInput( 22, 3))
-    ->bgColor("cyan");
-//->width(25);
-
-$TextInput1
-
-    ->on("input",
-        function() {
-            static $count=0;
-            $count++;
-            Terminal::echoAt(3, 5, "Input events: ".$count);
-        })
-
-
-        ->on("input",
-            function($event) use ($TextInput1) {
-                Terminal::clearLine( 10 );
-                Terminal::echoAt( 10, 10,
-                    "Input so far: " . $event->getData("value") .
-                    " (From TextInput->value: " . $TextInput1->getValue() . ")" );
-            })
-
-
-            ->onInterval(1000,
-                function($event) use ($TextInput1) {
-                    Terminal::clearLine( 10 );
-                    Terminal::echoAt( 10, 11, "Interval: ".date());
-                })
-
-
-                ->onTimeout(5000,
-                    function($event) use ($TextInput1) {
-                        Terminal::clearLine( 10 );
-                        Terminal::echoAt( 10, 12, "Timed out: ".date());
-                    });
-
-
-$your_name = $TextInput1->render()->focus();
-$your_name = $TextInput1->getValue();
-
-
-// move to line 25 and clear the lower half of the screen
-//Cursor::move(3, 25);
-//Terminal::clearDown();
-
-Cursor::move(3, 30);
-
-echo("Hello, {$your_name}!!\n");
-
-$Label->render();
-$your_name = $TextInput1->focus();
-
-Cursor::move(0, 30);
-//Terminal::clearDown();
-
-
-Terminal::restoreContents();
-Cursor::setPosition($original_cursor_position);
-
-echo("Hello, {$your_name}!!\n");
-
-exit();
-
-
-
-
-
-/* */
-
-T::echoln("Is CLI: " . T::isCli());
-T::echoln("Is TTY: " . T::isTTY());
-T::echoln("Is piped: " . T::isPiped());
-T::echoln("Cols: " . T::cols());
-
-T::echoln("Cols: " . T::cols());
-T::echoln("Rows: " . T::rows());
-T::echoln("Colors: " . T::colors());
-
-$position = Cursor::getPosition();
-
-T::echoln("Cursor Position: col:". $position['col'] . ", row: ". $position['row']);
-
-Cursor::up(15);
-Cursor::save();
-
-$position = Cursor::getPosition();
-
-T::echoln("Cursor Position: col:". $position['col'] . ", row: ". $position['row']);
-
-$char = T::read();
-
-$input = T::readln();
-
-T::echoln("Pressed key was: ".$char);
-T::echoln("Input text was: ".$input);
-
-Cursor::restore();
-T::echoln("@@@");
-
-Cursor::move(20,20);
-$input = T::input(
-    [
-        'callbacks' => [
-            27 => function($key, &$input) {T::echoln("Input so far:".$input); return true;},
-            9 => function()  {echo "T";},
-        ],
-        //'echo' => false,
-    ]
-);
-T::echoln("Input text was: ".$input);
