@@ -120,13 +120,13 @@ function set_list_colors($widget) {
     $style = new Style('white', 'black', 250, 236);
 
     // Widget style when focused
-    $styleFocused = (new Style('yellow', 'black', 253, 241))->bold()->underline();
+    $styleFocused = new Style('yellow', 'black', 253, 241);
 
     // Selected element in list when not focused
     $styleSelectedItem = new Style('black', 'white', 235, 250);
 
     // Selected element in list when focused
-    $styleSelectedItemFocused = new Style('black', 'white', 235, 253);
+    $styleSelectedItemFocused = (new Style('black', 'white', 235, 253))->bold()->underline();
 
     $widget->style($style);
     $widget->styleFocused($styleFocused);

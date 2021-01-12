@@ -106,6 +106,7 @@ class ListInput {
         if($this->offset > $this->focusedIndex) {
             $this->offset = min(count($this->items), $this->offset-1);
         }
+        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
     }
 
     public function moveDown() {
@@ -122,10 +123,11 @@ class ListInput {
         if( ($this->offset + ($this->height - 1) ) < $this->focusedIndex) {
             $this->offset = max(0, $this->focusedIndex-($this->height-1) );
         }
+        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
     }
 
     public function select() {
-        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
+        $result = $this->emit("selected", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
     }
 
     public function add(ListItem $item) {
@@ -143,16 +145,20 @@ class ListInput {
         }
 
 
+
         for ( $i = 0; $i < $this->height; $i++) {
             Cursor::move( $this->col, $this->row+$i );
             if ( isset($this->items[$i+$this->offset]) ) {
                 if ( ($i + $this->offset ) == $this->focusedIndex ) {
-                      Terminal::applyStyle($this->currentStyleSelectedItem());
+                    Terminal::applyStyle($this->currentStyleSelectedItem());
                 } else {
                     Terminal::applyStyle($this->currentStyle());
                 }
 
                 $this->items[$i + $this->offset]->render();
+            } else {
+                Terminal::applyStyle($this->currentStyle());
+                Terminal::echo(str_repeat(" ", $this->width));
             }
         }
 

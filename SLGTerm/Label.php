@@ -10,6 +10,7 @@ class Label {
     protected $col;
     protected $row;
     protected $value = "";
+    protected $style = null;
 
     public function __construct(string $value = "", int $col = -1, int $row = -1, int $width = -1) {
         $this->value = $value;
@@ -17,6 +18,7 @@ class Label {
         $this->row = $row;
         $this->width = $width;
         $this->init_observable();
+        $this->style = new Style();
     }
 
     public function render() {

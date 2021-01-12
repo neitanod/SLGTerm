@@ -1,0 +1,242 @@
+#!/usr/bin/env php
+<?php
+require(__DIR__."/SLGTerm/autoload.php");
+
+use SLGTerm\Form;
+use SLGTerm\Input;
+use SLGTerm\Box;
+use SLGTerm\Terminal;
+use SLGTerm\Terminal as T;
+use SLGTerm\Cursor;
+use SLGTerm\TextInput;
+use SLGTerm\ListInput;
+use SLGTerm\ListItem;
+use SLGTerm\Label;
+use SLGTerm\Button;
+use SLGTerm\Spinner;
+use SLGTerm\Style;
+
+return main();
+
+
+function main() {
+
+    // Save screen and restore at the end.
+    $original_cursor_position = Cursor::getPosition();
+    Terminal::saveContents();
+    Cursor::showOnExit();
+
+    $remotes = load_remotes();
+
+    if( !$remotes ) {
+       echo "No git remotes on current directory.";
+       return 1;
+    }
+
+    $app = create_main_form($remotes);
+
+    $app->show();
+    $app->focus();
+
+    Terminal::restoreContents();
+    Cursor::setPosition($original_cursor_position);
+
+    // This demo does nothing
+    // but we can compare data with original and
+    // run git to rename remotes or change the urls.
+
+    if( empty($app->aborted) ) {
+        echo "\n";
+        Terminal::fgColor("black");
+        Terminal::bgColor("green");
+        echo "If this was a real app all remotes would have been updated.\n";
+    } else {
+        Terminal::fgColor("white");
+        Terminal::bold();
+        Terminal::bgColor("red");
+        echo "Changes were aborted.\n";
+        Terminal::normal();
+    }
+
+    return 0;
+}
+
+function load_remotes() {
+    // Harcoded for the demo but can be obtained via
+    // git remote and git remote get-url
+    return [
+        ['name'=>'origin', 'url'=>'git@github.com:neitanod/SLGTerm.git'],
+        ['name'=>'bitbucket', 'url'=>'git@bitbucket.org:neitanod/SLGTerm.git'],
+        ['name'=>'github', 'url'=>'git@bitbucket.org:other/SLGTerm.git'],
+        ['name'=>'private', 'url'=>'git@myserver.org:other/SLGTerm.git'],
+    ];
+}
+
+
+function set_default_colors($widget) {
+    $widget->style( new Style("white", "black", 250, 235) );
+}
+
+function set_list_colors($widget) {
+    // Widget style when not focused
+    $style = new Style('white', 'black', 250, 236);
+
+    // Widget style when focused
+    $styleFocused = new Style('yellow', 'black', 253, 241);
+
+    // Selected element in list when not focused
+    $styleSelectedItem = new Style('black', 'white', 235, 250);
+
+    // Selected element in list when focused
+    $styleSelectedItemFocused = (new Style('black', 'white', 235, 253))->bold()->underline();
+
+    $widget->style($style);
+    $widget->styleFocused($styleFocused);
+    $widget->styleSelectedItem($styleSelectedItem);
+    $widget->styleSelectedItemFocused($styleSelectedItemFocused);
+}
+
+function set_info_colors($widget) {
+    $widget->style( new Style("white", "blue", 250, 27) );
+}
+
+function set_success_colors($widget) {
+    $widget->style( new Style("white", "green", 250, 64) );
+    $widget->styleFocused( ( new Style("white", "green", 255, 34) )->underline()->bold() );
+}
+
+function set_danger_colors($widget) {
+    $widget->style( new Style("white", "red", 255) );
+    $widget->styleFocused( ( new Style("white", "red", 255, 160) )->underline()->bold() );
+}
+
+function create_main_form($remotes) {
+
+    $app = new Form();
+
+    $Box = new Box(); // Fullscreen by default
+    set_default_colors($Box);
+
+    $app->addWidget($Box); // Use as form background, useful for clean redraws
+
+    $Title = (new Label(" Edit GIT remotes: ", 3, 2));
+    set_default_colors($Title);
+    $app->addWidget($Title);
+
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols(), Terminal::cols()));
+    set_info_colors($StatusBar);
+    $app->addWidget($StatusBar);
+
+    $app->on("key", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<ESC>") {
+            $event->getData('controller')->aborted = true;
+            $event->getData('controller')->hide();
+        }
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<TAB>") {
+            $event->getData('controller')->focusNext();
+        } elseif($key == "<HOME>") {
+            $event->getData('controller')->focusPrevious();
+        }
+    });
+
+    $ListLabel = new Label("Select the remote to edit:", 4, 4);
+    set_default_colors($ListLabel);
+
+    $List = new ListInput(4, 6, 28, 6);
+    set_list_colors($List);
+
+    foreach ($remotes as $key => $remote) {
+        $List->add(new ListItem($remote['name'], $key));
+    }
+
+
+    $NameLabel = (new Label(" Name: ", 34, 6));
+    set_default_colors($NameLabel);
+
+    $Name = (new TextInput( 42, 6))
+        ->style(new Style(null, "cyan"))
+        ->styleFocused((new Style(null, "cyan"))->underline()->bold())
+        ->width(10);
+
+    $UrlLabel = (new Label(" URL: ", 34, 8));
+    set_default_colors($UrlLabel);
+
+    $Url = (new TextInput( 42, 8))
+        ->style(new Style(null, "cyan"))
+        ->styleFocused((new Style(null, "cyan"))->underline()->bold())
+        ->width(40);
+
+
+    $List->on("input", function ($event) use ($app, $Name, $Url, $remotes) {
+        $Name->setValue($remotes[$event->getData('key')]['name']);
+        $Url->setValue($remotes[$event->getData('key')]['url']);
+        $app->render();
+    });
+
+    $List->on("selected", function ($event) use ($app, $Name, $Url, $remotes) {
+        $Name->setValue($remotes[$event->getData('key')]['name']);
+        $Url->setValue($remotes[$event->getData('key')]['url']);
+        $app->focusNext();
+        $app->render();
+    });
+
+    if ( isset( $remotes[0] ) ) {
+        $Name->setValue($remotes[0]['name']);
+        $Url->setValue($remotes[0]['url']);
+    }
+
+    $SaveButton = (new Button("  Save  ", 42, 11));
+    set_success_colors($SaveButton);
+
+
+    $SaveButton->on("pressed",
+        function($event) use ($app) {
+            $app->hide();
+            $app->aborted = false;
+        }
+    );
+
+
+    $RemoveButton = (new Button(" 🗑 Delete  ", 52, 11));
+    set_danger_colors($RemoveButton);
+
+    $RemoveButton->on("pressed", function($event) use ($RemoveButton) {
+        $spinner = new Spinner($RemoveButton->col()+14, $RemoveButton->row());
+        $interval = Input::setInterval(function() use ($spinner) { $spinner->advance(); }, 200);
+        Input::setTimeout(function() use ($interval) { Input::clearTimer($interval); }, 5000);
+    });
+
+    $QuitButton = (new Button("  Quit  ", 74, 11));
+    set_danger_colors($QuitButton);
+
+    $QuitButton->on("pressed",
+        function($event) use ($app) {
+            $app->hide();
+            $app->aborted = true;
+        }
+    );
+
+    // Add focusable widgets in the order of the focusing cycle:
+    $app->addWidget($ListLabel);
+    $app->addWidget($List);
+    $app->addWidget($NameLabel);
+    $app->addWidget($Name);
+    $app->addWidget($UrlLabel);
+    $app->addWidget($Url);
+    $app->addWidget($SaveButton);
+    $app->addWidget($RemoveButton);
+    $app->addWidget($QuitButton);
+
+    return $app;
+}
