@@ -109,6 +109,15 @@ class Terminal {
         Cursor::restore();
     }
 
+    public static function echoWidth($str, $width, $fill = null)
+    {
+        if (mb_strlen($str) >= $width) {
+            Terminal::echo( mb_substr($str, 0, $width) );
+        } else {
+            Terminal::echo( $str . str_repeat(is_null($fill)?" ":$fill, $width - mb_strlen($str)) );
+        }
+    }
+
     public static function readln() {
         return fgets(STDIN);
     }

@@ -7,6 +7,7 @@ require(__DIR__."/Cursor.php");
 require(__DIR__."/Input.php");
 require(__DIR__."/Form.php");
 require(__DIR__."/Box.php");
+require(__DIR__."/Text.php");
 require(__DIR__."/TextInput.php");
 require(__DIR__."/ListInput.php");
 require(__DIR__."/ListItem.php");
