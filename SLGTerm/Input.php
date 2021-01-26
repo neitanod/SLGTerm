@@ -86,6 +86,7 @@ class Input {
                 } elseif ($read_something && \ord($read) == 0) {
                     $done_reading++;
                 }
+                usleep(100);
             }
 
             $timed_out = (microtime(true) > $timeout);
