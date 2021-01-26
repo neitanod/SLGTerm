@@ -1,0 +1,189 @@
+#!/usr/bin/env php
+<?php
+require(__DIR__."/SLGTerm/autoload.php");
+
+use SLGTerm\Form;
+use SLGTerm\Terminal;
+use SLGTerm\Cursor;
+use SLGTerm\Box;
+use SLGTerm\TextInput;
+use SLGTerm\Input;
+use SLGTerm\Text;
+use SLGTerm\Label;
+use SLGTerm\Spinner;
+use SLGTerm\Style;
+
+return main();
+
+
+function main() {
+    // Save screen and restore at the end.
+    $original_cursor_position = Cursor::getPosition();
+    Terminal::saveContents();
+
+    $app = create_form();
+
+    // Create a time interval to add lines to the Text element we call "console"
+    Input::setInterval(
+        function() use ( $app ) {
+            $app->console->append(date("Y-m-d H:i:s"));
+            if ( $app->autoscroll ) {
+                $app->console->moveBottom();
+            }
+            $app->render();
+        } , 1000
+    );
+
+    $app->console->append("==================");
+    $app->console->append("");
+    $app->console->append("Use key <a> to toggle autoscroll (console mode).");
+    $app->console->append("Appending one line per second...");
+
+    $app->focus();
+
+    Terminal::restoreContents();
+    Cursor::setPosition($original_cursor_position);
+
+    return 0;
+}
+
+
+function create_form() {
+
+    $app = new Form();
+
+    add_resize_event($app);
+
+    $Box = new Box(); // Fullscreen by default
+    $Box->style( new Style("white", "black", 250, 235) );
+
+    $StatusBar = (new Label("", 0, Terminal::rows(), Terminal::cols()))
+        ->style(new Style('black', 'green'));
+
+    $app->on("key", function( $event ) use ($StatusBar) {
+        $key = $event->getData('key');
+        $StatusBar->setValue("key: ".$key." ".json_encode($event->getData()))
+            ->render();
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<ESC>" || $key == "<ENTER>") {
+            $event->getData('controller')->hide();
+            // setting exit to true will break the loop on next iteration
+        }
+    });
+
+    $Label = (new Label(" Contents of loaded file: ", 3, 3));
+        // ->style(new Style('black', 'green'));
+
+    $Text = (new Text())
+        ->setValue( file(__DIR__."/utf8_text.txt") )   // load this very source file and display it
+        ->style(new Style('white', 'black', 250, 236))
+        ->styleFocused(new Style('yellow', 'black', 253, 241));
+
+    $Label2 = (new Label(" Console: ", intval(Terminal::cols() / 2) + 3, 3)); // ->style(new Style('black', 'green'));
+
+    $Text2 = (new Text())
+        ->style(new Style('white', 'black', 250, 236))
+        ->styleFocused(new Style('yellow', 'black', 253, 241));
+
+    $app->addWidget($Box);
+    $app->addWidget($Label);
+    $app->addWidget($Text);
+    $app->addWidget($Label2);
+    $app->addWidget($Text2);
+    $app->addWidget($StatusBar);
+
+    $resizer = function() use ($Box, $Text, $Text2, $Label2, $StatusBar) {
+        $Box
+            ->setCol(0)
+            ->setRow(0)
+            ->setWidth(Terminal::cols())
+            ->setHeight(Terminal::rows());
+
+        $Text
+            ->setCol(3)
+            ->setRow(5)
+            ->setWidth(intval(Terminal::cols() / 2) - 1)
+            ->setHeight( Terminal::rows() - 7);
+
+        $Text2
+            ->setCol(intval(Terminal::cols() / 2) + 3)
+            ->setRow(5)
+            ->setWidth(intval(Terminal::cols() / 2 ) - 3)
+            ->setHeight(Terminal::rows() - 7);
+
+        $Label2
+            ->setCol( intval(Terminal::cols() / 2) + 3 );
+
+        $StatusBar
+           ->setRow(Terminal::rows())
+           ->setWidth(Terminal::cols());
+    };
+
+    // Set initial dimensions
+    $resizer();
+
+    // Subscribe resizer to resize event on terminal.
+    $app->on("resize", function() use($app, $resizer) {
+        $resizer();
+        $app->render();
+    });
+
+    $app->on("key", function( $event ) {
+        $key = $event->getData('key');
+        if($key == "<TAB>") {
+            $event->getData('controller')->focusNext();
+        } elseif($key == "<HOME>") {
+            $event->getData('controller')->focusPrevious();
+        } elseif($key == "a") {
+            $event->getData('controller')->autoscroll = !$event->getData('controller')->autoscroll;
+        }
+    });
+
+    // Create a shortcut reference to the Text element to have it
+    // accessible from our app.
+    $app->console = $Text2;
+
+    $app->autoscroll = true;
+
+    return $app;
+
+}
+
+function add_resize_event(\SLGTerm\Form $app) {
+
+    Input::setInterval(function () use ($app) {
+        // Intervals and Timeouts only work while a
+        // Form object ($app for example) has the focus.
+
+        // Keep track of terminal dimensions
+        static $cols;
+        if (is_null($cols)) {
+            $cols = Terminal::cols();
+        }
+
+        static $rows;
+        if (is_null($rows)) {
+            $rows = Terminal::rows();
+        }
+
+        if( $cols != Terminal::cols() || $rows != Terminal::rows()) {
+
+            $oldDimensions = [ "cols" => $cols, "rows" => $rows ];
+            $cols = Terminal::cols();
+            $rows = Terminal::rows();
+            $newDimensions = [ "cols" => $cols, "rows" => $rows ];
+
+            $data = ["oldDimensions"=>$oldDimensions, "newDimensions"=>$newDimensions];
+
+            // Can easily integrate with objects if we make them emit an event
+            $app->emit("resize", $data);
+
+        }
+
+    } , 1000); // query once per second
+
+}
+
