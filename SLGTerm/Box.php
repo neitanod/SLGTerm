@@ -1,7 +1,13 @@
 <?php
 namespace SLGTerm;
 
+require_once(__DIR__."/TraitHasColRow.php");
+require_once(__DIR__."/TraitHasWidth.php");
+require_once(__DIR__."/TraitHasHeight.php");
+
 class Box {
+
+    use HasColRow, HasWidth, HasHeight;
 
     protected $set = [
         'none' => [
@@ -47,19 +53,19 @@ class Box {
     public function __construct(
         int $col = 0,
         int $row = 0,
-        int $width = -1,
-        int $height = -1
+        int $width = null,
+        int $height = null
     ) {
         $this->col = $col;
         $this->row = $row;
 
-        if($width == -1) {
+        if( is_null($width) ) {
             $this->width = Terminal::cols() - $col;
         } else {
             $this->width = $width;
         }
 
-        if($height == -1) {
+        if( is_null($height) ) {
             $this->height = Terminal::rows() - $row;
         } else{
             $this->height = $height;

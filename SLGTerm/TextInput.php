@@ -2,15 +2,14 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
+require_once(__DIR__."/TraitHasColRow.php");
+require_once(__DIR__."/TraitHasWidth.php");
 require_once(__DIR__."/EditableString.php");
 
 class TextInput {
 
-    use Observable;
+    use Observable, HasColRow, HasWidth;
 
-    protected $col;
-    protected $row;
-    protected $width = 0;
     protected $echo = true;
     protected $localBuffer = [];
     protected $str = null;
@@ -24,22 +23,20 @@ class TextInput {
     protected $style = null;
     protected $styleFocused = null;
 
-    public function __construct(int $col = -1, int $row = -1) {
+    const DEFAULT_WIDTH = 25;
+
+    public function __construct(int $col = null, int $row = null) {
         $this->col = $col;
         $this->row = $row;
         $this->init_observable();
-        $this->width = -1;
+        $this->width = self::DEFAULT_WIDTH;
+
         //Terminal::cols() - $this->col;
         $this->str = new EditableString();
     }
 
     public function setValue(string $value) {
         $this->str->setValue($value);
-    }
-
-    public function width($width) {
-        $this->width = $width;
-        return $this;
     }
 
     public function readFromBuffer() {
@@ -65,7 +62,7 @@ class TextInput {
     protected function advanceCursor() {
 
         if($this->str->advanceCursor()) {
-            if($this->posInField >= $this->width) { // if pushing right
+            if($this->posInField >= $this->getWidth()) { // if pushing right
                 $this->offset++;
             } else {
                 $this->posInField++;
@@ -87,19 +84,19 @@ class TextInput {
     }
 
     protected function calculateVisible() {
-        return str_pad(substr(substr($this->str->getValue(), $this->offset), 0, $this->width), $this->width);
+        return str_pad(substr(substr($this->str->getValue(), $this->offset), 0, $this->getWidth()), $this->getWidth());
     }
 
     public function render() {
-        if ( $this->col == -1 ) {
+        if ( is_null($this->col) ) {
             $this->positionAtCursor();
         }
 
-        if ( $this->width == -1 ) {
-            $this->width = min(Terminal::cols() - $this->col, 30);
+        if ( is_null($this->width) ) {
+            $this->width = min(Terminal::cols() - $this->getCol(), 30);
         }
 
-        Cursor::move($this->col, $this->row);
+        Cursor::move($this->getCol(), $this->getRow());
 
         if ( $this->hasFocus ) {
             $this->underline = true;
@@ -111,7 +108,7 @@ class TextInput {
 
         Terminal::echo($this->calculateVisible());
 
-        Cursor::move($this->col + $this->posInField, $this->row);
+        Cursor::move($this->getCol() + $this->posInField, $this->getRow());
         Terminal::resetStyle();
         return $this;
     }
@@ -184,5 +181,14 @@ class TextInput {
         } else {
             return $this->styleFocused;
         }
+    }
+
+    protected function getWidth() {
+        return $this->width;
+    }
+
+    public function setWidth(int $width) {
+        $this->width = $width;
+        return $this;
     }
 }

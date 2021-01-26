@@ -2,10 +2,13 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
+require_once(__DIR__."/TraitHasColRow.php");
+require_once(__DIR__."/TraitHasWidth.php");
+require_once(__DIR__."/TraitHasHeight.php");
 
 class Text {
 
-    use Observable;
+    use Observable, HasColRow, HasWidth, HasHeight;
 
     protected $upKeys = [
         "<UP>",
@@ -29,10 +32,7 @@ class Text {
 
     protected $offset = 0;
 
-    protected $col = null;
-    protected $row = null;
     protected $height = null;
-    protected $width = null;
 
     protected $style = null;
     protected $styleFocused = null;
@@ -101,7 +101,7 @@ class Text {
     }
 
     public function moveDown() {
-        $this->offset = min(count($this->contents)-$this->height, $this->offset+1);
+        $this->offset = min(count($this->contents)-$this->getHeight(), $this->offset+1);
     }
 
     public function moveTop() {
@@ -109,7 +109,7 @@ class Text {
     }
 
     public function moveBottom() {
-        $this->offset = count($this->contents)-$this->height;
+        $this->offset = count($this->contents)-$this->getHeight();
     }
 
     public function render() {
@@ -121,22 +121,18 @@ class Text {
             $this->positionAtCursor();
         }
 
-        if ( is_null($this->height) ) {
-            $this->height = self::DEFAULT_HEIGHT;
-        }
-
-        for ( $i = 0; $i < $this->height; $i++) {
-            Cursor::move( $this->col, $this->row+$i );
+        for ( $i = 0; $i < $this->getHeight(); $i++) {
+            Cursor::move( $this->getCol(), $this->getRow()+$i );
             if ( isset($this->contents[$i+$this->offset]) ) {
                 Terminal::applyStyle($this->currentStyle());
                 if (is_object( $this->contents[$i + $this->offset] )) {
                     $this->contents[$i + $this->offset]->render();
                 } else {
-                    Terminal::echoWidth($this->contents[$i + $this->offset], $this->width);
+                    Terminal::echoWidth($this->contents[$i + $this->offset], $this->getWidth());
                 }
             } else {
                 Terminal::applyStyle($this->currentStyle());
-                Terminal::echo(str_repeat(" ", $this->width));
+                Terminal::echo(str_repeat(" ", $this->getWidth()));
             }
         }
 
@@ -175,14 +171,6 @@ class Text {
         $this->col = $current_position["col"];
         $this->row = $current_position["row"];
         return $this;
-    }
-
-    public function getWidth() {
-        if ( is_null($this->width) ) {
-            $this->width = self::DEFAULT_WIDTH;
-        }
-
-        return $this->width;
     }
 
     public function style(Style $style) {

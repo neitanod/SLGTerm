@@ -2,17 +2,17 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
+require_once(__DIR__."/TraitHasColRow.php");
+require_once(__DIR__."/TraitHasWidth.php");
 
 class Label {
 
-    use Observable;
+    use Observable, HasColRow, HasWidth;
 
-    protected $col;
-    protected $row;
     protected $value = "";
     protected $style = null;
 
-    public function __construct(string $value = "", int $col = -1, int $row = -1, int $width = -1) {
+    public function __construct(string $value = "", int $col = null, int $row = null, int $width = null) {
         $this->value = $value;
         $this->col = $col;
         $this->row = $row;
@@ -23,17 +23,17 @@ class Label {
 
     public function render() {
 
-        if ( $this->col == -1 ) {
+        if ( is_null($this->col) ) {
             $this->positionAtCursor();
         } else {
-            Cursor::move($this->col, $this->row);
+            Cursor::move($this->getCol(), $this->getRow());
         }
 
         Terminal::applyStyle($this->style);
 
-        $width = $this->width;
+        $width = $this->getWidth();
 
-        if($width == -1) {
+        if( is_null($width) ) {
             $width = mb_strlen($this->value);
         }
 
