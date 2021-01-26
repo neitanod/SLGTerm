@@ -20,6 +20,7 @@ function main() {
     // Save screen and restore at the end.
     $original_cursor_position = Cursor::getPosition();
     Terminal::saveContents();
+    Cursor::showOnExit();
 
     $app = create_form();
 
