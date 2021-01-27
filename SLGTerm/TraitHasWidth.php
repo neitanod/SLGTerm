@@ -5,7 +5,7 @@ trait HasWidth {
 
     protected $width;
 
-    protected function getWidth() {
+    public function getWidth() {
         if (
             is_null($this->width) &&
             defined('self::DEFAULT_WIDTH')

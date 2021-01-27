@@ -70,7 +70,11 @@ class Form {
         Input::readCleanup();
     }
 
-    public function focusWidget(int $index) {
+    public function focusWidget($widget) {
+        return $this->focusIndex( array_search($widget, $this->widgets) );
+    }
+
+    public function focusIndex(int $index) {
         $success = false;
         $old_focused = $this->focused_widget;
         if(method_exists($this->widgets[$index], "focus")){
@@ -94,7 +98,7 @@ class Form {
             if( count($this->widgets) <= $new_focused ) {
                 $new_focused = 0;
             }
-            $done = $this->focusWidget($new_focused);
+            $done = $this->focusIndex($new_focused);
         }
         return $this;
     }
@@ -109,7 +113,7 @@ class Form {
             if( 0 > $new_focused ) {
                 $new_focused = count($this->widgets)-1;
             }
-            $done = $this->focusWidget($new_focused);
+            $done = $this->focusIndex($new_focused);
         }
         return $this;
     }
@@ -117,7 +121,7 @@ class Form {
     public function addWidget($widget) {
         $this->widgets[] = $widget;
         if (is_null($this->focused_widget)) {
-            $this->focusWidget(count($this->widgets)-1);
+            $this->focusIndex(count($this->widgets)-1);
         }
     }
 

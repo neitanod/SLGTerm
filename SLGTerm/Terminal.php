@@ -45,6 +45,10 @@ class Terminal {
     protected static $ttyprops;
     protected static $maxcolors = null;
 
+    public static function init_windows_support() {
+        sapi_windows_vt100_support(STDOUT, true);
+    }
+
     public static function cols() {
         return intval(exec('tput cols'));
     }
@@ -205,3 +209,5 @@ class Terminal {
     }
 
 }
+
+sapi_windows_vt100_support(STDOUT, true);

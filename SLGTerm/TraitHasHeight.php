@@ -5,7 +5,7 @@ trait HasHeight {
 
     protected $height;
 
-    protected function getHeight() {
+    public function getHeight() {
         if (
             is_null($this->height) &&
             defined('self::DEFAULT_HEIGHT')

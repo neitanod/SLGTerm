@@ -2,10 +2,13 @@
 namespace SLGTerm;
 
 require_once(__DIR__."/TraitObservable.php");
+require_once(__DIR__."/TraitHasColRow.php");
+require_once(__DIR__."/TraitHasWidth.php");
+require_once(__DIR__."/TraitHasHeight.php");
 
 class ListInput {
 
-    use Observable;
+    use Observable, HasColRow, HasWidth, HasHeight;
 
     protected $upKeys = [
         "<UP>",
@@ -28,15 +31,12 @@ class ListInput {
 
     protected $offset = 0;
 
-    protected $col = null;
-    protected $row = null;
-    protected $height = null;
-    protected $width = null;
-
     protected $style = null;
     protected $styleFocused = null;
     protected $styleSelectedItem = null;
     protected $styleSelectedItemFocused = null;
+
+    protected $items = [];
 
     const DEFAULT_WIDTH = 25;
     const DEFAULT_HEIGHT = 5;
@@ -72,6 +72,7 @@ class ListInput {
     }
 
     public function handleInput( $event ) {
+        $this->emit("key", $event->getData());
 
         $this->render();
         $key = $event->getData("key");
@@ -98,7 +99,7 @@ class ListInput {
             if($this->cycle) {
                 end($this->items); // move pointer to end to find out key
                 $this->focusedIndex = key($this->items);
-                $this->offset = max(0, count($this->items)-($this->height));
+                $this->offset = max(0, count($this->items)-($this->getHeight()));
             } else {
                 $this->focusedIndex = 0;
             }
@@ -106,7 +107,7 @@ class ListInput {
         if($this->offset > $this->focusedIndex) {
             $this->offset = min(count($this->items), $this->offset-1);
         }
-        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
+        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->getFocusedItem(), "value"=>$this->getValue(), "key"=>$this->focusedIndex ]);
     }
 
     public function moveDown() {
@@ -120,14 +121,22 @@ class ListInput {
                 $this->focusedIndex = key($this->items);
             }
         }
-        if( ($this->offset + ($this->height - 1) ) < $this->focusedIndex) {
-            $this->offset = max(0, $this->focusedIndex-($this->height-1) );
+        if( ($this->offset + ($this->getHeight() - 1) ) < $this->focusedIndex) {
+            $this->offset = max(0, $this->focusedIndex-($this->getHeight()-1) );
         }
-        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
+        $result = $this->emit("input", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->getFocusedItem(), "value"=>$this->getValue(), "key"=>$this->focusedIndex ]);
+    }
+
+    public function getFocusedItem() {
+        return empty($this->items) ? null : $this->items[$this->focusedIndex];
+    }
+
+    public function getValue() {
+        return empty($this->items) ? null : $this->items[$this->focusedIndex]->getValue();
     }
 
     public function select() {
-        $result = $this->emit("selected", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->items[$this->focusedIndex], "value"=>$this->items[$this->focusedIndex]->getValue(), "key"=>$this->focusedIndex ]);
+        $result = $this->emit("selected", ["bus"=>$this->bus, "target"=>$this, "item"=>$this->getFocusedItem(), "value"=>$this->getValue(), "key"=>$this->focusedIndex ]);
     }
 
     public function add(ListItem $item) {
@@ -136,18 +145,18 @@ class ListInput {
     }
 
     public function render() {
-        if ( is_null($this->col) ) {
+        if ( is_null($this->getCol()) ) {
             $this->positionAtCursor();
         }
 
-        if ( is_null($this->height) ) {
+        if ( is_null($this->getHeight()) ) {
             $this->height = self::DEFAULT_HEIGHT;
         }
 
 
 
-        for ( $i = 0; $i < $this->height; $i++) {
-            Cursor::move( $this->col, $this->row+$i );
+        for ( $i = 0; $i < $this->getHeight(); $i++) {
+            Cursor::move( $this->getCol(), $this->getRow()+$i );
             if ( isset($this->items[$i+$this->offset]) ) {
                 if ( ($i + $this->offset ) == $this->focusedIndex ) {
                     Terminal::applyStyle($this->currentStyleSelectedItem());
@@ -158,7 +167,7 @@ class ListInput {
                 $this->items[$i + $this->offset]->render();
             } else {
                 Terminal::applyStyle($this->currentStyle());
-                Terminal::echo(str_repeat(" ", $this->width));
+                Terminal::echo(str_repeat(" ", $this->getWidth()));
             }
         }
 
@@ -166,6 +175,12 @@ class ListInput {
         return $this;
     }
 
+
+    public function truncate() {
+        $this->items = [];
+        $this->focusedIndex = 0;
+        $result = $this->emit("truncate", ["target"=>$this]);
+    }
 
     public function focus() {
         $this->hasFocus = true;
@@ -184,14 +199,6 @@ class ListInput {
         $this->col = $current_position["col"];
         $this->row = $current_position["row"];
         return $this;
-    }
-
-    public function getWidth() {
-        if ( is_null($this->width) ) {
-            $this->width = self::DEFAULT_WIDTH;
-        }
-
-        return $this->width;
     }
 
     public function setCycle(bool $cycle) {
@@ -238,5 +245,14 @@ class ListInput {
         } else {
             return $this->styleSelectedItemFocused;
         }
+    }
+
+    public function getFocusedIndex() {
+        return $this->focusedIndex;
+    }
+
+    public function setFocusedIndex(int $index = 0) {
+        $this->focusedIndex = $index;
+        return $this;
     }
 }

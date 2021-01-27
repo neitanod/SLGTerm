@@ -6,11 +6,11 @@ trait HasColRow {
     protected $col;
     protected $row;
 
-    protected function getCol() {
+    public function getCol() {
         return $this->col;
     }
 
-    protected function getRow() {
+    public function getRow() {
         return $this->row;
     }
 
